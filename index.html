@@ -1025,7 +1025,7 @@ Réponds UNIQUEMENT en JSON valide, sans texte autour ni backticks, au format :
 {"title":"Titre court","paragraphs":["paragraphe 1","paragraphe 2","..."]}`;
 
     try {
-      const res = await fetch("/api/generate", {
+      const res = await fetch("/.netlify/functions/generate", {
         method:"POST",
         headers:{ "Content-Type":"application/json" },
         body: JSON.stringify({
@@ -1627,7 +1627,7 @@ Réponds UNIQUEMENT avec du JSON valide, sans texte autour, sans backticks, au f
 "correct" est l'index (0, 1 ou 2) de la bonne réponse.`;
 
     try {
-      const res = await fetch("/api/generate", {
+      const res = await fetch("/.netlify/functions/generate", {
         method:"POST",
         headers:{ "Content-Type":"application/json" },
         body: JSON.stringify({
