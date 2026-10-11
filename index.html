@@ -1009,18 +1009,54 @@
       ? `THÈME DEMANDÉ ce soir : ${storyTheme.trim()}. Intègre ce thème avec douceur dans l'aventure.`
       : "";
     const nbEnfants = KIDS.length;
-    const prompt = `Tu écris une histoire du soir en français pour ${nbEnfants === 1 ? "un enfant" : nbEnfants + " enfants"} : ${listePrenoms}, qui vont s'endormir.
+
+    // --- Variété imposée pour éviter que les histoires se ressemblent ---
+    const pickR = arr => arr[Math.floor(Math.random()*arr.length)];
+    const genres = [
+      "une aventure de découverte (on explore un endroit nouveau et merveilleux)",
+      "une petite enquête toute douce (on cherche un objet perdu, un mystère gentil à résoudre)",
+      "une histoire d'entraide (aider un personnage en difficulté, rendre service)",
+      "une histoire d'amitié (une nouvelle rencontre, se faire un ami)",
+      "une histoire rigolote et tendre (des quiproquos gentils, des moments drôles)",
+      "une histoire de fête ou de célébration (une surprise, un anniversaire, une kermesse)",
+      "un conte merveilleux (de la magie douce, un vœu qui se réalise)",
+      "une histoire du quotidien transformée en aventure (une cabane, un pique-nique, un jardin)",
+      "une histoire de voyage (un moyen de transport insolite et doux)",
+      "une histoire de nature et d'animaux (les saisons, la forêt, la mer)"
+    ];
+    const debuts = [
+      "en pleine action, au milieu d'une scène",
+      "par une question amusante posée au lecteur",
+      "par une description d'un son ou d'une odeur",
+      "par un dialogue entre deux personnages",
+      "par une petite chanson ou comptine inventée",
+      "par la présentation rigolote d'un personnage"
+    ];
+    const tons = [
+      "espiègle et joyeux", "tendre et poétique", "doux et rêveur",
+      "plein d'émerveillement", "chaleureux et rassurant", "drôle et pétillant"
+    ];
+    const genre = pickR(genres), debut = pickR(debuts), ton = pickR(tons);
+    const seed = Math.random().toString(36).slice(2,8);
+
+    const prompt = `Tu écris une histoire du soir ORIGINALE en français pour ${nbEnfants === 1 ? "un enfant" : nbEnfants + " enfants"} : ${listePrenoms}.
 ${themeLine}
-Voici les ingrédients qu'ils ont choisis :
+Personnages choisis par les enfants (à intégrer dans l'histoire) :
 ${ingredients}
-Écris UNE seule histoire douce qui réunit tous ces personnages dans une belle aventure calme.
-Contraintes IMPORTANTES :
-- Environ ${storyLength} mots (c'est important : vise vraiment cette longueur).
+
+CE SOIR, fais une histoire VRAIMENT DIFFÉRENTE des précédentes (graine unique : ${seed}).
+- Type d'histoire imposé ce soir : ${genre}.
+- Commence l'histoire ${debut} — surtout NE commence PAS par "Il était une fois", "Ce soir-là", "Quand la nuit…" ou une formule classique.
+- Ton général : ${ton}.
+- Invente une intrigue et une structure originales : varie les péripéties, les lieux, les rebondissements doux. Ne reprends pas un schéma tout fait.
+
+Contraintes à respecter :
+- Environ ${storyLength} mots (vise vraiment cette longueur).
 - Découpe en ${storyLength <= 1250 ? 14 : 17} paragraphes d'à peu près la même taille.
-- Ton très doux, apaisant, positif, adapté au coucher : rien d'effrayant, pas de méchant menaçant, pas de suspense angoissant.
-- Cite ${nbEnfants === 1 ? "l'enfant par son prénom" : "chaque enfant par son prénom (" + listePrenoms + ")"} comme s'ils faisaient partie de l'aventure.
-- L'histoire se termine par le calme et le sommeil : les personnages s'endorment, un joli rêve, la nuit paisible.
+- Adapté au coucher : rien d'effrayant, pas de méchant menaçant, pas de suspense angoissant. Ça peut être vivant et drôle au milieu, mais ça se termine toujours dans le calme et le sommeil.
+- Cite ${nbEnfants === 1 ? "l'enfant par son prénom" : "chaque enfant par son prénom (" + listePrenoms + ")"} comme héros de l'aventure.
 - Phrases simples et imagées, compréhensibles par un jeune enfant.
+- Un titre inventé, différent et rigolo ou joli (pas générique).
 Réponds UNIQUEMENT en JSON valide, sans texte autour ni backticks, au format :
 {"title":"Titre court","paragraphs":["paragraphe 1","paragraphe 2","..."]}`;
 
@@ -1031,14 +1067,13 @@ Réponds UNIQUEMENT en JSON valide, sans texte autour ni backticks, au format :
         body: JSON.stringify({
           model:"claude-sonnet-4-6",
           max_tokens: storyLength > 800 ? 4000 : storyLength > 400 ? 2000 : 1200,
+          temperature: 1,
           messages:[{ role:"user", content:prompt }]
         })
       });
       const data = await res.json();
       const text = data.content.filter(b=>b.type==="text").map(b=>b.text).join("");
-      let clean = text.replace(/```json/g,"").replace(/```/g,"").trim();
-      const a = clean.indexOf("{"), b = clean.lastIndexOf("}");
-      if (a !== -1 && b !== -1) clean = clean.slice(a, b+1);
+      const clean = text.replace(/```json/g,"").replace(/```/g,"").trim();
       const parsed = JSON.parse(clean);
       if (parsed && (parsed.paragraphs || parsed.text)) return parsed;
       throw new Error("format");
@@ -1638,9 +1673,7 @@ Réponds UNIQUEMENT avec du JSON valide, sans texte autour, sans backticks, au f
       });
       const data = await res.json();
       const text = data.content.filter(b=>b.type==="text").map(b=>b.text).join("");
-      let clean = text.replace(/```json/g,"").replace(/```/g,"").trim();
-      const a = clean.indexOf("{"), b = clean.lastIndexOf("}");
-      if (a !== -1 && b !== -1) clean = clean.slice(a, b+1);
+      const clean = text.replace(/```json/g,"").replace(/```/g,"").trim();
       const parsed = JSON.parse(clean);
       const qs = parsed.questions.filter(q =>
         q && q.question && Array.isArray(q.answers) && q.answers.length>=2 &&
