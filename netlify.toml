@@ -1,0 +1,11 @@
+# Configuration Netlify — version "glisser-déposer" (index à la racine)
+
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+# Fait pointer /api/generate vers la fonction Netlify
+[[redirects]]
+  from = "/api/generate"
+  to = "/.netlify/functions/generate"
+  status = 200

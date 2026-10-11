@@ -1,0 +1,2968 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="color-scheme" content="light only">
+<title>Le rituel du soir</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Baloo+2:wght@500;600;700;800&display=swap');
+
+  :root {
+    --sky: #6fb3e0;
+    --dusk: #8b7fc4;
+    --night: #3d3a6b;
+    --cream: #fff6e9;
+    --sun: #ffd166;
+    --peach: #ff9e7d;
+    --mint: #7fd1ae;
+    --ink: #2c2a4a;
+    --bg-grad: linear-gradient(180deg, #aed4f0 0%, #cbb8e6 55%, #b0a4d8 100%);
+    --card-bg: #fff6e9;
+    --card-ink: #2c2a4a;
+    --card-sub: #6a6788;
+    --pill-bg: rgba(255,255,255,0.85);
+  }
+
+  /* ---------- Mode nuit ---------- */
+  body.night {
+    --bg-grad: linear-gradient(180deg, #0f1830 0%, #1a1e3a 55%, #241f42 100%);
+    --card-bg: #262a44;
+    --card-ink: #eef0ff;
+    --card-sub: #a7a9c8;
+    --pill-bg: rgba(255,255,255,0.14);
+    --cream: #262a44;
+    --ink: #eef0ff;
+  }
+  body.night .step-card { box-shadow: 0 14px 34px rgba(0,0,0,0.45); }
+  body.night .topbar .clock,
+  body.night .now,
+  body.night .kid-score,
+  body.night .sound-toggle,
+  body.night #settingsBtn,
+  body.night .set-block { background: var(--pill-bg); }
+  body.night .set-block h3,
+  body.night .kid-score,
+  body.night .set-game { color: var(--card-ink); }
+  body.night .now .msg,
+  body.night .step-card p,
+  body.night .set-hint { color: var(--card-sub); }
+  body.night .set-input {
+    background: #1c2038; color: var(--card-ink); border-color: #3a3f60;
+  }
+  body.night .theme-chip { background: #33385a; color: #dfe1f5; }
+  body.night .kid-score .name { color: #b9a7e0; }
+  body.night #storyBody { color: #d6d8f0 !important; }
+
+  /* ---------- Thèmes de fond d'écran (jour) ---------- */
+  body.bg-sunset  { --bg-grad: linear-gradient(180deg, #ffd3a5 0%, #ff9a8b 50%, #c86b98 100%); }
+  body.bg-ocean   { --bg-grad: linear-gradient(180deg, #a1e3f0 0%, #6db9e0 50%, #4a77c0 100%); }
+  body.bg-forest  { --bg-grad: linear-gradient(180deg, #b6e2a1 0%, #7fc99a 50%, #4a9d8e 100%); }
+  body.bg-candy   { --bg-grad: linear-gradient(180deg, #ffd0e8 0%, #d9b8f0 50%, #b0c4f5 100%); }
+  body.bg-peach   { --bg-grad: linear-gradient(180deg, #ffe5c7 0%, #ffc9a8 50%, #f0a893 100%); }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body { height: 100%; }
+
+  body {
+    font-family: 'Fredoka', sans-serif;
+    color: var(--ink);
+    background: var(--bg-grad);
+    overflow: hidden;
+    user-select: none;
+  }
+
+  .screen {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px;
+  }
+  .screen.on { display: flex; }
+
+  .stars { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+  .star { position: absolute; background: #fff; border-radius: 50%; }
+
+  /* ---------- Écran d'accueil ---------- */
+  #home { justify-content: center; text-align: center; }
+  #home .moon { font-size: 90px; animation: float 4s ease-in-out infinite; }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-14px)} }
+  #home h1 {
+    font-family: 'Baloo 2', sans-serif;
+    font-size: clamp(34px, 8vw, 60px);
+    font-weight: 800;
+    color: #fff;
+    text-shadow: 0 4px 0 rgba(61,58,107,0.35);
+    margin: 10px 0 6px;
+    line-height: 1.05;
+    z-index: 2;
+  }
+  #home .sub { color: #fff; font-size: 20px; opacity: 0.9; margin-bottom: 34px; z-index: 2; }
+  .big-btn {
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 30px;
+    font-weight: 700;
+    color: #fff;
+    background: var(--peach);
+    border: none;
+    border-radius: 30px;
+    padding: 22px 48px;
+    cursor: pointer;
+    box-shadow: 0 8px 0 rgba(61,58,107,0.3);
+    transition: transform 0.1s;
+    z-index: 2;
+  }
+  .big-btn:active { transform: translateY(5px); box-shadow: 0 3px 0 rgba(61,58,107,0.3); }
+
+  /* ---------- Écran rituel ---------- */
+  #ritual { justify-content: flex-start; }
+  .topbar {
+    width: 100%;
+    max-width: 640px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    z-index: 2;
+  }
+  .topbar .title {
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 2px 0 rgba(61,58,107,0.3);
+  }
+  .topbar .clock {
+    background: rgba(255,255,255,0.85);
+    color: var(--night);
+    font-weight: 700;
+    font-size: 18px;
+    padding: 5px 14px;
+    border-radius: 16px;
+  }
+
+  .progress {
+    width: 100%;
+    max-width: 640px;
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    z-index: 2;
+  }
+  .pdot {
+    flex: 1;
+    height: 10px;
+    background: rgba(255,255,255,0.4);
+    border-radius: 6px;
+    transition: background 0.3s;
+  }
+  .pdot.done { background: var(--mint); }
+
+  .card-wrap {
+    width: 100%;
+    max-width: 640px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    z-index: 2;
+  }
+
+  .step-card {
+    background: var(--card-bg);
+    color: var(--card-ink);
+    border-radius: 34px;
+    padding: 40px 30px;
+    text-align: center;
+    box-shadow: 0 14px 34px rgba(61,58,107,0.3);
+  }
+  .step-card .pic { font-size: 96px; line-height: 1; margin-bottom: 6px; }
+  .step-card .pic.multi { font-size: 62px; letter-spacing: 4px; }
+  .step-card .num { font-size: 16px; color: var(--dusk); font-weight: 600; margin-bottom: 4px; }
+  .step-card h2 {
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 34px;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 8px;
+  }
+  .step-card p { font-size: 18px; color: #6a6788; margin-bottom: 26px; }
+
+  .done-btn {
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: #fff;
+    background: var(--mint);
+    border: none;
+    border-radius: 24px;
+    padding: 18px 44px;
+    cursor: pointer;
+    box-shadow: 0 7px 0 #5ba98a;
+    transition: transform 0.1s;
+  }
+  .done-btn:active { transform: translateY(5px); box-shadow: 0 2px 0 #5ba98a; }
+
+  /* Deux validations */
+  .validators {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .kid-btn {
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+    border: none;
+    border-radius: 22px;
+    padding: 16px 30px;
+    cursor: pointer;
+    transition: transform 0.1s, background 0.25s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 160px;
+    justify-content: center;
+  }
+  .kid-btn .tick { font-size: 22px; opacity: 0; transition: opacity 0.2s; }
+  .kid-btn.tapped .tick { opacity: 1; }
+  .kid-btn:active { transform: translateY(4px); }
+  /* César */
+  .kid-cesar { background: var(--sky); box-shadow: 0 6px 0 #4e93c0; }
+  .kid-cesar:active { box-shadow: 0 2px 0 #4e93c0; }
+  .kid-cesar.tapped { background: var(--mint); box-shadow: 0 6px 0 #5ba98a; }
+  /* Inès */
+  .kid-ines { background: #e87ba8; box-shadow: 0 6px 0 #c25a86; }
+  .kid-ines:active { box-shadow: 0 2px 0 #c25a86; }
+  .kid-ines.tapped { background: var(--mint); box-shadow: 0 6px 0 #5ba98a; }
+
+  .kid-scores {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 16px;
+    z-index: 2;
+    flex-wrap: wrap;
+  }
+  .kid-score {
+    background: rgba(255,255,255,0.85);
+    border-radius: 18px;
+    padding: 8px 16px;
+    font-weight: 600;
+    color: var(--night);
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .kid-score .name { color: var(--dusk); }
+
+  .star-row {
+    text-align: center;
+    font-size: 30px;
+    letter-spacing: 6px;
+    margin-top: 18px;
+    min-height: 40px;
+    z-index: 2;
+  }
+
+  /* ---------- Écran final ---------- */
+  #done { justify-content: center; text-align: center; }
+  #done .trophy { font-size: 110px; animation: pop 0.6s ease; }
+  @keyframes pop { 0%{transform:scale(0)} 70%{transform:scale(1.2)} 100%{transform:scale(1)} }
+  #done h1 {
+    font-family: 'Baloo 2', sans-serif;
+    font-size: clamp(34px, 8vw, 58px);
+    font-weight: 800;
+    color: #fff;
+    text-shadow: 0 4px 0 rgba(61,58,107,0.35);
+    margin: 14px 0 6px;
+    z-index: 2;
+  }
+  #done .stars-final { font-size: 46px; letter-spacing: 10px; margin: 10px 0 30px; z-index: 2; }
+  #done .sub { color:#fff; font-size: 22px; margin-bottom: 30px; z-index: 2; }
+  .small-btn {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--night);
+    background: rgba(255,255,255,0.85);
+    border: none;
+    border-radius: 20px;
+    padding: 12px 26px;
+    cursor: pointer;
+    z-index: 2;
+  }
+
+  /* bouton son discret en haut à droite */
+  .sound-toggle {
+    position: fixed;
+    bottom: 16px; right: 16px;
+    top: auto;
+    background: rgba(255,255,255,0.85);
+    border: none;
+    border-radius: 50%;
+    width: 52px; height: 52px;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 20;
+    box-shadow: 0 4px 12px rgba(61,58,107,0.25);
+  }
+
+  /* confettis */
+  .confetti { position: absolute; width: 10px; height: 14px; top: -20px; z-index: 3; border-radius: 2px; }
+
+  /* Avatars de célébration */
+  .celebrate-layer {
+    position: fixed; inset: 0; z-index: 30;
+    display: flex; align-items: center; justify-content: center;
+    gap: 18px; pointer-events: none;
+  }
+  .celebrate-av {
+    width: 92px; height: 92px; border-radius: 50%;
+    background-size: cover; background-position: center;
+    border: 4px solid #fff; box-shadow: 0 8px 24px rgba(61,58,107,0.4);
+  }
+  @keyframes av-bounce { 0%{transform:translateY(60px) scale(0.6);opacity:0} 40%{transform:translateY(-20px) scale(1.1);opacity:1} 60%{transform:translateY(0) scale(1)} 80%{transform:translateY(-12px)} 100%{transform:translateY(0) scale(1);opacity:0} }
+  @keyframes av-spin  { 0%{transform:rotate(0) scale(0.4);opacity:0} 30%{opacity:1} 50%{transform:rotate(360deg) scale(1.15)} 100%{transform:rotate(360deg) scale(1);opacity:0} }
+  @keyframes av-pop   { 0%{transform:scale(0);opacity:0} 50%{transform:scale(1.3);opacity:1} 70%{transform:scale(0.95)} 100%{transform:scale(1);opacity:0} }
+  @keyframes av-wobble{ 0%{transform:scale(0.5) rotate(-12deg);opacity:0} 40%{opacity:1} 50%{transform:scale(1.1) rotate(12deg)} 70%{transform:scale(1) rotate(-8deg)} 100%{transform:scale(1) rotate(0);opacity:0} }
+  @keyframes av-float { 0%{transform:translateY(40px) scale(0.6);opacity:0} 30%{opacity:1} 100%{transform:translateY(-140px) scale(1.1);opacity:0} }
+
+  /* ---------- Réglages ---------- */
+  .set-block {
+    background: rgba(255,255,255,0.9);
+    border-radius: 20px;
+    padding: 18px 20px;
+    margin-bottom: 16px;
+  }
+  .set-block h3 {
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 20px;
+    color: var(--night);
+    margin-bottom: 12px;
+  }
+  .set-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+  .set-input {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 16px;
+    padding: 10px 12px;
+    border: 2px solid #e3ddf0;
+    border-radius: 12px;
+    color: var(--ink);
+    flex: 1;
+    min-width: 120px;
+  }
+  .set-input:focus { outline: none; border-color: var(--dusk); }
+  .set-emoji { width: 58px; text-align: center; font-size: 22px; }
+  .set-color { width: 44px; height: 40px; border: none; border-radius: 10px; cursor: pointer; padding: 0; }
+  .set-del {
+    background: #e0796f; color: #fff; border: none; border-radius: 10px;
+    width: 38px; height: 38px; font-size: 18px; cursor: pointer; flex-shrink: 0;
+  }
+  .set-del:disabled { background: #ccc; cursor: not-allowed; }
+  .set-move {
+    background: var(--sky); color:#fff; border:none; border-radius:10px;
+    width: 34px; height: 38px; font-size: 16px; cursor: pointer; flex-shrink: 0;
+  }
+  .set-add {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 16px; font-weight: 600;
+    color: #fff; background: var(--mint); border: none;
+    border-radius: 14px; padding: 10px 18px; cursor: pointer; margin-top: 4px;
+  }
+  .set-hint { font-size: 13px; color: #8a86a6; margin-top: 8px; }
+  .theme-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .theme-chip {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 14px; font-weight: 600;
+    color: var(--night); background: #eee7f7;
+    border: 2px solid transparent; border-radius: 16px;
+    padding: 7px 14px; cursor: pointer;
+  }
+  .theme-chip.active { background: var(--dusk); color: #fff; }
+  .set-game {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 0; font-size: 15px; color: var(--ink);
+  }
+  .set-game input { width: 20px; height: 20px; accent-color: var(--dusk); }
+  #settings .topbar { max-width: 640px; }
+  /* Compactage sur écrans étroits (téléphones) */
+  @media (max-height: 800px), (max-width: 520px) {
+    .card-wrap { justify-content: flex-start; padding-top: 4px; }
+    .step-card { padding: 22px 18px; border-radius: 26px; }
+    .step-card .pic { font-size: 64px; }
+    .step-card h2 { font-size: 26px; }
+    .step-card p { font-size: 16px; margin-bottom: 16px; }
+    #story, #settings, #game { padding: 16px; }
+    .screen { padding: 16px; }
+  }
+  #story .card-wrap, #settings .card-wrap { flex: none; justify-content: flex-start; }
+</style>
+</head>
+<body>
+
+  <button class="sound-toggle" id="soundBtn" title="Sons">🔔</button>
+
+  <!-- ACCUEIL -->
+  <div class="screen on" id="home">
+    <div class="stars"></div>
+    <div class="moon">🌙</div>
+    <h1>C'est l'heure<br>du rituel !</h1>
+    <div class="sub" id="homeSub">On se prépare pour la nuit</div>
+    <button class="big-btn" id="startBtn">Commencer ✨</button>
+    <button id="settingsBtn" style="position:absolute;top:16px;left:16px;background:rgba(255,255,255,0.8);border:none;border-radius:50%;width:48px;height:48px;font-size:22px;cursor:pointer;z-index:5;">⚙️</button>
+  </div>
+
+  <!-- RITUEL -->
+  <div class="screen" id="ritual">
+    <div class="stars"></div>
+    <div class="topbar">
+      <span class="title">Notre rituel</span>
+      <span class="clock" id="clock">--:--</span>
+    </div>
+    <div class="progress" id="progress"></div>
+    <div class="card-wrap">
+      <div class="step-card" id="card">
+        <div class="pic" id="cPic">🧸</div>
+        <div class="num" id="cNum">Étape 1 sur 4</div>
+        <h2 id="cTitle">On range les jouets</h2>
+        <p id="cText">Chaque chose retrouve sa maison</p>
+        <div class="validators" id="validators"></div>
+      </div>
+    </div>
+    <div class="kid-scores" id="kidScores"></div>
+    <div class="star-row" id="starRow"></div>
+  </div>
+
+  <!-- JEU -->
+  <div class="screen" id="game">
+    <div class="stars"></div>
+    <div class="topbar">
+      <span class="title">🎲 Le jeu du soir</span>
+      <span class="clock" id="clockGame">--:--</span>
+    </div>
+
+    <div class="card-wrap">
+      <!-- Bandeau : à qui le tour -->
+      <div id="gameTurn" style="text-align:center;margin-bottom:14px;z-index:2;">
+        <span id="turnBadge" style="display:inline-block;font-family:'Baloo 2',sans-serif;font-size:24px;font-weight:800;color:#fff;padding:8px 24px;border-radius:22px;"></span>
+      </div>
+
+      <!-- Chargement -->
+      <div id="gameLoading" class="step-card" style="display:none;">
+        <div class="pic" style="animation:float 2s ease-in-out infinite;">🎲</div>
+        <h2 style="font-size:26px;">On prépare ton jeu…</h2>
+        <p id="loadingSub">Un petit instant !</p>
+      </div>
+
+      <!-- Question -->
+      <div id="gameCard" class="step-card" style="display:none;">
+        <div class="pic" id="qEmoji" style="font-size:70px;">❓</div>
+        <div class="num" id="qCount">Question 1 sur 3</div>
+        <h2 id="qText" style="font-size:28px;">…</h2>
+        <div id="qAnswers" style="display:flex;flex-direction:column;gap:12px;margin-top:20px;"></div>
+        <div id="qFeedback" style="min-height:34px;margin-top:14px;font-family:'Baloo 2',sans-serif;font-size:22px;font-weight:700;"></div>
+      </div>
+
+      <!-- Fin du tour d'un enfant -->
+      <div id="gameKidDone" class="step-card" style="display:none;text-align:center;">
+        <div class="pic">🌟</div>
+        <h2 id="kidDoneTitle" style="font-size:30px;">Bravo !</h2>
+        <p id="kidDoneText" style="font-size:20px;">…</p>
+        <button class="big-btn" id="kidDoneBtn" style="margin-top:10px;font-size:24px;padding:16px 40px;">Continuer →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTOIRE -->
+  <div class="screen" id="story" style="overflow-y:auto;justify-content:flex-start;">
+    <div class="stars"></div>
+    <div class="topbar">
+      <span class="title">📖 L'histoire du soir</span>
+      <span class="clock" id="clockStory">--:--</span>
+    </div>
+
+    <div class="card-wrap">
+      <!-- Choix d'un enfant -->
+      <div id="storyChoose" class="step-card" style="display:none;">
+        <div id="chooseBadge" style="display:inline-block;font-family:'Baloo 2',sans-serif;font-size:22px;font-weight:800;color:#fff;padding:6px 20px;border-radius:20px;margin-bottom:6px;"></div>
+        <div class="num" id="chooseStep">Choix 1 sur 3</div>
+        <h2 id="chooseQuestion" style="font-size:26px;">Choisis ton héros</h2>
+        <div id="chooseOptions" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;"></div>
+      </div>
+
+      <!-- Chargement -->
+      <div id="storyLoading" class="step-card" style="display:none;">
+        <div class="pic" style="animation:float 2s ease-in-out infinite;">✨</div>
+        <h2 style="font-size:26px;">On écrit votre histoire…</h2>
+        <p>Rien que pour vous deux 📖</p>
+      </div>
+
+      <!-- Histoire -->
+      <div id="storyText" class="step-card" style="display:none;text-align:left;">
+        <h2 id="storyTitle" style="font-size:28px;text-align:center;margin-bottom:14px;">…</h2>
+        <div id="storyBody" style="font-size:19px;line-height:1.6;color:#3a3860;max-height:46vh;overflow-y:auto;padding-right:6px;"></div>
+        <div style="display:flex;gap:12px;justify-content:center;margin-top:20px;flex-wrap:wrap;">
+          <button class="big-btn" id="readBtn" style="font-size:20px;padding:14px 30px;background:var(--dusk);">🔊 Lire à voix haute</button>
+          <button class="big-btn" id="storyDoneBtn" style="font-size:20px;padding:14px 30px;">Terminer →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FINAL -->
+  <div class="screen" id="done">
+    <div class="stars"></div>
+    <div class="trophy">🏆</div>
+    <h1>Bravo !</h1>
+    <div class="kid-scores" id="finalScores" style="margin-bottom:18px;"></div>
+    <div class="sub">Tout est fait. Bonne nuit les loulous 🌙</div>
+    <button class="small-btn" id="restartBtn">Recommencer</button>
+  </div>
+
+  <!-- RÉGLAGES -->
+  <div class="screen" id="settings" style="overflow-y:auto;justify-content:flex-start;">
+    <div class="stars"></div>
+    <div class="topbar" style="margin-top:4px;">
+      <span class="title">⚙️ Réglages</span>
+      <button class="small-btn" id="settingsClose">Fermer ✓</button>
+    </div>
+
+    <div style="width:100%;max-width:640px;z-index:2;padding-bottom:40px;">
+
+      <!-- Apparence -->
+      <div class="set-block">
+        <h3>Apparence</h3>
+        <label class="set-game" style="justify-content:space-between;">
+          <span>🌙 Mode nuit (couleurs douces pour le soir)</span>
+          <input type="checkbox" id="setNight">
+        </label>
+        <h3 style="margin-top:16px;">Fond d'écran</h3>
+        <div id="bgChips" class="theme-chips"></div>
+        <p class="set-hint">Le mode nuit reste prioritaire s'il est activé.</p>
+      </div>
+
+      <!-- Enfants -->
+      <div class="set-block">
+        <h3>Les enfants</h3>
+        <div id="setKids"></div>
+      </div>
+
+      <!-- Étapes -->
+      <div class="set-block">
+        <h3>Les étapes du rituel</h3>
+        <div id="setSteps"></div>
+        <button class="set-add" id="addStepBtn">+ Ajouter une étape vide</button>
+        <button class="set-add" id="libraryBtn" style="background:var(--sky);margin-left:6px;">📚 Choisir dans la bibliothèque</button>
+        <div id="stepLibrary" style="display:none;margin-top:12px;padding:12px;background:rgba(255,255,255,0.6);border-radius:14px;"></div>
+        <p class="set-hint">Les étapes normales sont supprimables (✕). Les étapes 🎲 jeu et 📖 histoire ne se suppriment pas mais se masquent (👁) : masquées, elles sont sautées pendant le rituel et réactivables à tout moment.</p>
+      </div>
+
+      <!-- Jeux -->
+      <div class="set-block">
+        <h3>Nombre de questions par jeu</h3>
+        <div id="qCountChips" class="theme-chips"></div>
+        <h3 style="margin-top:18px;">Catégorie des questions</h3>
+        <div id="catByKid"></div>
+        <p class="set-hint">Choisis le type de questions pour chaque enfant.</p>
+        <h3 style="margin-top:18px;">Thème des jeux</h3>
+        <div id="themeByKid"></div>
+        <p class="set-hint">Chaque enfant peut avoir son propre thème de questions.</p>
+      </div>
+
+      <!-- Histoires -->
+      <div class="set-block">
+        <h3>Longueur de l'histoire</h3>
+        <div id="storyLenChips" class="theme-chips"></div>
+        <p class="set-hint">Plus long = quelques minutes de lecture en plus. (Uniquement pour les histoires générées avec internet.)</p>
+      </div>
+
+    </div>
+  </div>
+
+<script>
+  // ---------- Configuration modifiable (réglages) ----------
+  let KIDS = [
+    { key:'k1', name:'César', age:6, color:'#6fb3e0' },
+    { key:'k2', name:'Inès',  age:4, color:'#e87ba8' }
+  ];
+  const KID_COLORS = ['#6fb3e0','#e87ba8','#7fd1ae','#ffb35c','#a78bd0','#f08a8a'];
+  let kidSeq = 3; // pour générer des clés uniques (k3, k4, …)
+
+  // Scores par enfant, indexés par clé
+  let scores = {};
+  function ensureScores(){ KIDS.forEach(k => { if (!(k.key in scores)) scores[k.key] = 0; }); }
+  ensureScores();
+
+  // thème libre appliqué aux histoires (ex: "les dinosaures"), vide = libre
+  let storyTheme = "";
+  let gameThemes = {};       // par clé enfant
+  let gameCategories = {};   // par clé enfant
+  function ensureKidMaps(){
+    KIDS.forEach(k => {
+      if (!(k.key in gameThemes)) gameThemes[k.key] = "";
+      if (!(k.key in gameCategories)) gameCategories[k.key] = "melange";
+    });
+  }
+  ensureKidMaps();
+  let nightMode = false;
+  let bgTheme = "jour"; // fond d'écran choisi
+  let storyLength = 1500; // mots visés pour l'histoire
+  let questionsPerGame = 3; // nombre de questions par mini-jeu
+
+  // ---------- Données des étapes ----------
+  let steps = [
+    { pic:"🚿", multi:false, title:"La douche", text:"On se lave bien partout" },
+    { pic:"👕", multi:false, title:"Le pyjama", text:"Le pyjama tout doux pour la nuit" },
+    { pic:"🍽️", multi:false, title:"Débarrasser son assiette", text:"On aide à ranger la table" },
+    { pic:"🚽", multi:false, title:"Faire pipi", text:"On passe aux toilettes avant d'aller au lit" },
+    { pic:"🧼", multi:false, title:"Laver les mains", text:"Avec du savon, on frotte bien partout !" },
+    { pic:"🪥", multi:false, title:"Laver les dents", text:"En haut, en bas, partout pour de belles dents !" },
+    { pic:"🎲", game:true, title:"Le petit jeu du soir", text:"Chacun son tour pour un mini-jeu !" },
+    { pic:"🧘", multi:false, title:"Trois respirations", text:"On souffle tout doucement, trois fois" },
+    { pic:"💬", multi:false, title:"Le meilleur moment du jour", text:"On raconte une belle chose d'aujourd'hui" },
+    { pic:"😘", multi:false, title:"Faire des bisous", text:"Un bisou à tout le monde" },
+    { pic:"📖", story:true, title:"L'histoire du soir", text:"On choisit ensemble, puis on écoute !" }
+  ];
+
+  let current = 0;
+
+  // ---------- Rendu dynamique des boutons de validation et scores ----------
+  let tapped = {}; // par clé enfant
+
+  function buildValidators() {
+    const box = document.getElementById('validators');
+    box.innerHTML = "";
+    KIDS.forEach(k => {
+      const b = document.createElement('button');
+      b.className = 'kid-btn' + (tapped[k.key] ? ' tapped' : '');
+      b.style.background = tapped[k.key] ? 'var(--mint)' : k.color;
+      b.style.boxShadow = '0 6px 0 rgba(61,58,107,0.35)';
+      const av = k.avatar
+        ? `<span style="width:30px;height:30px;border-radius:50%;background:url(${k.avatar}) center/cover;display:inline-block;flex-shrink:0;border:2px solid #fff;"></span>`
+        : "";
+      b.innerHTML = av + '<span>' + k.name + '</span> <span class="tick">✓</span>';
+      b.addEventListener('click', () => {
+        if (tapped[k.key]) return;
+        tapped[k.key] = true;
+        b.classList.add('tapped');
+        b.style.background = 'var(--mint)';
+        playChime('tap');
+        tryAdvance();
+      });
+      box.appendChild(b);
+    });
+  }
+
+  function buildScores(containerId) {
+    const box = document.getElementById(containerId);
+    if (!box) return;
+    box.innerHTML = "";
+    KIDS.forEach(k => {
+      const d = document.createElement('div');
+      d.className = 'kid-score';
+      const av = k.avatar
+        ? `<span style="width:24px;height:24px;border-radius:50%;background:url(${k.avatar}) center/cover;display:inline-block;flex-shrink:0;border:2px solid ${k.color};"></span> `
+        : "";
+      d.innerHTML = av + `<span class="name">${k.name}</span> <span data-score="${k.key}">⭐ ${scores[k.key]||0}</span>`;
+      box.appendChild(d);
+    });
+  }
+
+  function refreshScoreDisplays() {
+    KIDS.forEach(k => {
+      document.querySelectorAll(`[data-score="${k.key}"]`).forEach(el => el.textContent = '⭐ ' + (scores[k.key]||0));
+    });
+  }
+
+  // ---------- Application de la config à l'affichage ----------
+  function applyConfig() {
+    ensureScores();
+    ensureKidMaps();
+    buildValidators();
+    buildScores('kidScores');
+  }
+
+  function resetTaps() {
+    tapped = {};
+    KIDS.forEach(k => tapped[k.key] = false);
+    buildValidators();
+  }
+
+  // ---------- Étoiles décoratives ----------
+  document.querySelectorAll('.stars').forEach(container => {
+    for (let i = 0; i < 22; i++) {
+      const d = document.createElement('div');
+      d.className = 'star';
+      const size = Math.random()*4+2;
+      d.style.width = d.style.height = size+'px';
+      d.style.left = Math.random()*100+'%';
+      d.style.top = Math.random()*55+'%';
+      d.style.opacity = (Math.random()*0.6+0.3).toFixed(2);
+      container.appendChild(d);
+    }
+  });
+
+  // ---------- Navigation écrans ----------
+  const screens = { home:document.getElementById('home'), ritual:document.getElementById('ritual'), game:document.getElementById('game'), story:document.getElementById('story'), done:document.getElementById('done'), settings:document.getElementById('settings') };
+  function show(name) {
+    Object.values(screens).forEach(s => s.classList.remove('on'));
+    screens[name].classList.add('on');
+  }
+
+  // ---------- Horloge ----------
+  const clockEl = document.getElementById('clock');
+  const homeSub = document.getElementById('homeSub');
+  function fmt(d){ return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+  const clockGameEl = document.getElementById('clockGame');
+  const clockStoryEl = document.getElementById('clockStory');
+  function tickClock(){
+    const now = new Date();
+    clockEl.textContent = fmt(now);
+    clockGameEl.textContent = fmt(now);
+    clockStoryEl.textContent = fmt(now);
+    const wed = now.getDay() === 3;
+    homeSub.textContent = wed ? "Mercredi soir — un peu plus tard 🌟" : "On se prépare pour la nuit";
+  }
+  tickClock();
+  setInterval(tickClock, 15000);
+
+  // ---------- Barre de progression ----------
+  const progress = document.getElementById('progress');
+  const dots = [];
+  function rebuildProgress() {
+    progress.innerHTML = "";
+    steps.forEach(() => {
+      const dot = document.createElement('div');
+      dot.className = 'pdot';
+      progress.appendChild(dot);
+    });
+    dots.length = 0;
+    [...progress.children].forEach(d => dots.push(d));
+  }
+  rebuildProgress();
+
+  // ---------- Affichage d'une étape ----------
+  const cPic = document.getElementById('cPic');
+  const cNum = document.getElementById('cNum');
+  const cTitle = document.getElementById('cTitle');
+  const cText = document.getElementById('cText');
+  const starRow = document.getElementById('starRow');
+  const card = document.getElementById('card');
+
+  function finishRitual() {
+    buildScores('finalScores');
+    show('done'); playChime('win'); bigConfetti();
+  }
+
+  function renderStep() {
+    // Fin du rituel : plus d'étape à afficher
+    if (current >= steps.length) { finishRitual(); return; }
+    const s = steps[current];
+    // Étape masquée : on la saute
+    if (s && s.hidden) {
+      current++;
+      if (current >= steps.length) finishRitual();
+      else renderStep();
+      return;
+    }
+    // Étape jeu : on quitte la carte de validation et on lance le jeu
+    if (s.game) {
+      dots.forEach((d,i) => d.classList.toggle('done', i < current));
+      startGame();
+      return;
+    }
+    // Étape histoire : on lance le choix interactif puis la génération
+    if (s.story) {
+      dots.forEach((d,i) => d.classList.toggle('done', i < current));
+      startStory();
+      return;
+    }
+    cPic.textContent = s.pic;
+    cPic.className = 'pic' + (s.multi ? ' multi' : '');
+    cNum.textContent = `Étape ${current+1} sur ${steps.length}`;
+    cTitle.textContent = s.title;
+    cText.textContent = s.text;
+    dots.forEach((d,i) => d.classList.toggle('done', i < current));
+    starRow.textContent = '⭐'.repeat(current);
+    buildValidators();
+    show('ritual');
+  }
+
+  // ---------- Validation par tous les enfants ----------
+  function tryAdvance() {
+    // il faut que TOUS les enfants aient validé
+    if (!KIDS.every(k => tapped[k.key])) return;
+    KIDS.forEach(k => scores[k.key] = (scores[k.key]||0) + 1);
+    refreshScoreDisplays();
+    playChime(current === steps.length-1 ? 'bedtime' : 'step');
+    burstConfetti();
+    avatarCelebration();
+    dots[current].classList.add('done');
+    current++;
+    if (current >= steps.length) {
+      setTimeout(finishRitual, 500);
+    } else {
+      resetTaps();
+      card.animate([{opacity:0.3, transform:'scale(0.96)'},{opacity:1, transform:'scale(1)'}], {duration:350, easing:'ease'});
+      renderStep();
+    }
+  }
+
+  // ---------- Boutons ----------
+  document.getElementById('startBtn').addEventListener('click', () => {
+    ensureAudio();
+    current = 0;
+    KIDS.forEach(k => scores[k.key] = 0);
+    refreshScoreDisplays();
+    resetTaps();
+    renderStep();
+  });
+  document.getElementById('restartBtn').addEventListener('click', () => {
+    current = 0;
+    resetTaps();
+    show('home');
+  });
+
+  // ================= MODULE HISTOIRE =================
+  // storyPlayers = KIDS (accès direct)
+
+  // Les trois choix, avec des options illustrées (emoji + mot)
+  const storySteps = [
+    { q:"Choisis ton héros", key:"héros", options:[
+      ["🦁","un lionceau"],["🐰","un petit lapin"],["🐉","un gentil dragon"],
+      ["🧚","une fée"],["🚀","un astronaute"],["🐢","une tortue"],
+      ["🦄","une licorne"],["🐧","un pingouin"],["🐨","un koala"],
+      ["🦊","un renardeau"],["🐼","un panda"],["🧜","une sirène"],
+      ["🦕","un dinosaure"],["🐘","un éléphanteau"],["🦸","un super-héros"],
+      ["🤴","un petit prince"],["👸","une princesse"],["🧙","un magicien"],
+      ["🐝","une abeille"],["🦥","un paresseux"],["🐹","un hamster"],
+      ["🦇","une chauve-souris"],["🦖","un T-rex tout doux"],["🧞","un génie"]
+    ]},
+    { q:"Choisis un endroit", key:"lieu", options:[
+      ["🌲","une forêt magique"],["🌊","le fond de la mer"],["☁️","dans les nuages"],
+      ["🏰","un grand château"],["🌙","sur la lune"],["🏞️","une vallée paisible"],
+      ["🏝️","une île déserte"],["❄️","un pays de neige"],["🌋","près d'un volcan endormi"],
+      ["🍄","un village de champignons"],["🏜️","un désert doré"],["🌈","au bout de l'arc-en-ciel"],
+      ["🪐","une planète lointaine"],["🌳","une cabane dans un arbre"],["🕳️","une grotte scintillante"],
+      ["🌷","un jardin fleuri"],["🏔️","une haute montagne"],["🎡","une fête foraine endormie"],
+      ["🚂","à bord d'un train magique"],["⛵","sur un petit bateau"],["🏙️","une ville de bonbons"],
+      ["🌌","au milieu des étoiles"],["🦋","une prairie de papillons"],["🏕️","un campement douillet"]
+    ]},
+    { q:"Choisis un compagnon", key:"compagnon", options:[
+      ["🦊","un renard malin"],["🐻","un ours doux"],["🦉","une chouette sage"],
+      ["🐬","un dauphin joueur"],["🐿️","un écureuil rigolo"],["🦋","un papillon brillant"],
+      ["🐶","un chiot fidèle"],["🐱","un chaton câlin"],["🐰","un lapin sauteur"],
+      ["🐢","une tortue tranquille"],["🦔","un hérisson tout doux"],["🐦","un petit oiseau"],
+      ["🐴","un poney"],["🐑","un mouton nuage"],["🦆","un caneton"],
+      ["🐸","une grenouille rieuse"],["🐛","une chenille curieuse"],["🦩","un flamant rose"],
+      ["🐨","un koala endormi"],["🦦","une loutre joueuse"],["🐧","un pingouin maladroit"],
+      ["🦌","un faon timide"],["🐲","un bébé dragon"],["🌟","une étoile vivante"]
+    ]}
+  ];
+
+  const elStoryChoose   = document.getElementById('storyChoose');
+  const elChooseBadge   = document.getElementById('chooseBadge');
+  const elChooseStep    = document.getElementById('chooseStep');
+  const elChooseQuestion= document.getElementById('chooseQuestion');
+  const elChooseOptions = document.getElementById('chooseOptions');
+  const elStoryLoading  = document.getElementById('storyLoading');
+  const elStoryText     = document.getElementById('storyText');
+  const elStoryTitle    = document.getElementById('storyTitle');
+  const elStoryBody     = document.getElementById('storyBody');
+  const elReadBtn       = document.getElementById('readBtn');
+  const elStoryDoneBtn  = document.getElementById('storyDoneBtn');
+
+  let stOrderIndex = 0;   // position dans stOrder
+  let stOrder = [];       // ordre de passage (indices dans KIDS)
+  let stStepIndex = 0;
+  let stChoices = {};     // par clé enfant
+
+  function showStoryPanel(which) {
+    elStoryChoose.style.display  = which==='choose'  ? 'block' : 'none';
+    elStoryLoading.style.display = which==='loading' ? 'block' : 'none';
+    elStoryText.style.display    = which==='text'    ? 'block' : 'none';
+  }
+
+  function currentStoryPlayer() { return KIDS[stOrder[stOrderIndex]]; }
+
+  function startStory() {
+    // même rotation que le jeu : qui commence change chaque jour
+    const dayNum = Math.floor(Date.now() / 86400000);
+    const start = KIDS.length ? dayNum % KIDS.length : 0;
+    stOrder = KIDS.map((_,i) => (start + i) % KIDS.length);
+    stOrderIndex = 0;
+    stStepIndex = 0;
+    stChoices = {};
+    KIDS.forEach(k => stChoices[k.key] = {});
+    show('story');
+    renderChoice();
+  }
+
+  function renderChoice() {
+    const p = currentStoryPlayer();
+    const step = storySteps[stStepIndex];
+    showStoryPanel('choose');
+    elChooseBadge.textContent = p.name;
+    elChooseBadge.style.background = p.color;
+    elChooseStep.textContent = `Choix ${stStepIndex+1} sur ${storySteps.length}`;
+    elChooseQuestion.textContent = step.q;
+    elChooseOptions.innerHTML = "";
+    step.options.forEach(([emoji, label]) => {
+      const b = document.createElement('button');
+      b.className = 'kid-btn';
+      b.style.background = p.color;
+      b.style.boxShadow = '0 5px 0 rgba(61,58,107,0.3)';
+      b.style.flexDirection = 'column';
+      b.style.minWidth = '0';
+      b.style.width = '100%';
+      b.style.padding = '12px 8px';
+      b.style.gap = '4px';
+      b.innerHTML = `<span style="font-size:34px;">${emoji}</span><span style="font-size:14px;line-height:1.15;">${label}</span>`;
+      b.addEventListener('click', () => {
+        stChoices[p.key][step.key] = label;
+        playChime('tap');
+        burstConfetti();
+        nextChoice();
+      });
+      elChooseOptions.appendChild(b);
+    });
+  }
+
+  function nextChoice() {
+    stStepIndex++;
+    if (stStepIndex < storySteps.length) {
+      renderChoice();
+    } else if (stOrderIndex < stOrder.length - 1) {
+      // enfant suivant
+      stOrderIndex++;
+      stStepIndex = 0;
+      renderChoice();
+    } else {
+      // tous ont choisi : on génère
+      generateStory();
+    }
+  }
+
+  // Corrige les élisions manquantes (de une → d'une, que une → qu'une, etc.)
+  function fixElisions(t) {
+    if (!t) return t;
+    // mots élidables suivis d'un mot commençant par une voyelle ou h muet
+    const voy = "aàâeéèêëiîïoôuûùhAÀÂEÉÈÊËIÎÏOÔUÛÙH";
+    const rules = [
+      [/\bde ([aàâeéèêëiîïoôuûùhAÀÂEÉÈÊËIÎÏOÔUÛÙH])/g, "d'$1"],
+      [/\bque ([aàâeéèêëiîïoôuûùhAÀÂEÉÈÊËIÎÏOÔUÛÙH])/g, "qu'$1"],
+      [/\ble ([aàâeéèêëiîïoôuûùhAÀÂEÉÈÊËIÎÏOÔUÛÙH])/g, "l'$1"],
+      [/\bla ([aàâeéèêëiîïoôuûùhAÀÂEÉÈÊËIÎÏOÔUÛÙH])/g, "l'$1"],
+      [/\bje ([aàâeéèêëiîïoôuûùhAÀÂEÉÈÊËIÎÏOÔUÛÙH])/g, "j'$1"],
+      [/\bne ([aàâeéèêëiîïoôuûùhAÀÂEÉÈÊËIÎÏOÔUÛÙH])/g, "n'$1"],
+      [/\bse ([aàâeéèêëiîïoôuûùhAÀÂEÉÈÊËIÎÏOÔUÛÙH])/g, "s'$1"],
+      [/\bce ([aàâeéèêëiîïoôuûùhAÀÂEÉÈÊËIÎÏOÔUÛÙH])/g, "c'$1"],
+      [/\bme ([aàâeéèêëiîïoôuûùhAÀÂEÉÈÊËIÎÏOÔUÛÙH])/g, "m'$1"],
+      [/\bte ([aàâeéèêëiîïoôuûùhAÀÂEÉÈÊËIÎÏOÔUÛÙH])/g, "t'$1"]
+    ];
+    rules.forEach(([re, rep]) => { t = t.replace(re, rep); });
+    return t;
+  }
+
+  async function generateStory() {
+    showStoryPanel('loading');
+    const story = await fetchStory(stChoices);
+    elStoryTitle.textContent = fixElisions(story.title) || "Notre histoire";
+    // paragraphes
+    elStoryBody.innerHTML = "";
+    const paras = (story.paragraphs || [story.text || ""]).map(fixElisions);
+    paras.forEach(par => {
+      const p = document.createElement('p');
+      p.style.marginBottom = '12px';
+      p.textContent = par;
+      elStoryBody.appendChild(p);
+    });
+    lastStoryText = paras.join(" ");
+    showStoryPanel('text');
+    playChime('win');
+  }
+
+  // ---------- Génération de l'histoire (API Claude, avec fallback) ----------
+  async function fetchStory(choices) {
+    const prenoms = KIDS.map(k => k.name);
+    const listePrenoms = prenoms.length > 1
+      ? prenoms.slice(0,-1).join(", ") + " et " + prenoms[prenoms.length-1]
+      : prenoms[0];
+    const ingredients = KIDS.map(k => {
+      const ch = choices[k.key] || {};
+      return `- Héros de ${k.name} (${k.age} ans) : ${ch["héros"]||"un héros"}, dans ${ch["lieu"]||"un lieu"}, avec ${ch["compagnon"]||"un compagnon"}.`;
+    }).join("\n");
+    const themeLine = storyTheme.trim()
+      ? `THÈME DEMANDÉ ce soir : ${storyTheme.trim()}. Intègre ce thème avec douceur dans l'aventure.`
+      : "";
+    const nbEnfants = KIDS.length;
+    const prompt = `Tu écris une histoire du soir en français pour ${nbEnfants === 1 ? "un enfant" : nbEnfants + " enfants"} : ${listePrenoms}, qui vont s'endormir.
+${themeLine}
+Voici les ingrédients qu'ils ont choisis :
+${ingredients}
+Écris UNE seule histoire douce qui réunit tous ces personnages dans une belle aventure calme.
+Contraintes IMPORTANTES :
+- Environ ${storyLength} mots (c'est important : vise vraiment cette longueur).
+- Découpe en ${storyLength <= 1250 ? 14 : 17} paragraphes d'à peu près la même taille.
+- Ton très doux, apaisant, positif, adapté au coucher : rien d'effrayant, pas de méchant menaçant, pas de suspense angoissant.
+- Cite ${nbEnfants === 1 ? "l'enfant par son prénom" : "chaque enfant par son prénom (" + listePrenoms + ")"} comme s'ils faisaient partie de l'aventure.
+- L'histoire se termine par le calme et le sommeil : les personnages s'endorment, un joli rêve, la nuit paisible.
+- Phrases simples et imagées, compréhensibles par un jeune enfant.
+Réponds UNIQUEMENT en JSON valide, sans texte autour ni backticks, au format :
+{"title":"Titre court","paragraphs":["paragraphe 1","paragraphe 2","..."]}`;
+
+    try {
+      const res = await fetch("/api/generate", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({
+          model:"claude-sonnet-4-6",
+          max_tokens: storyLength > 800 ? 4000 : storyLength > 400 ? 2000 : 1200,
+          messages:[{ role:"user", content:prompt }]
+        })
+      });
+      const data = await res.json();
+      const text = data.content.filter(b=>b.type==="text").map(b=>b.text).join("");
+      let clean = text.replace(/```json/g,"").replace(/```/g,"").trim();
+      const a = clean.indexOf("{"), b = clean.lastIndexOf("}");
+      if (a !== -1 && b !== -1) clean = clean.slice(a, b+1);
+      const parsed = JSON.parse(clean);
+      if (parsed && (parsed.paragraphs || parsed.text)) return parsed;
+      throw new Error("format");
+    } catch(e) {
+      return fallbackStory(choices);
+    }
+  }
+
+  // Helpers partagés par les scénarios
+  function storyCtx(choices) {
+    const noms = KIDS.map(k => k.name);
+    const liste = noms.length > 1 ? noms.slice(0,-1).join(", ") + " et " + noms[noms.length-1] : noms[0];
+    const pluriel = KIDS.length > 1;
+    const pick = arr => arr[Math.floor(Math.random()*arr.length)];
+
+    // Réserve de paragraphes doux et apaisants, insérés pour allonger l'histoire.
+    const SOFT = [
+      `Le temps semblait s'être arrêté, comme suspendu dans une bulle de douceur. Rien ne pressait, rien ne faisait de bruit. On entendait seulement le souffle léger du vent dans les feuilles, et, très loin, le chant tranquille d'un oiseau de nuit qui veillait sur les rêveurs. ${pluriel?"Les enfants":"L'enfant"} ${pluriel?"se sentaient":"se sentait"} bien, comme enveloppé${pluriel?"s":""} dans une grande couverture invisible et chaude.`,
+      `Autour ${pluriel?"d'eux":"de lui ou d'elle"}, la nature s'endormait lentement. Les fleurs repliaient leurs pétales une à une, les feuilles cessaient de bruisser, et une brume dorée toute douce montait doucement du sol, comme une couverture posée sur le monde. Même les petits ruisseaux coulaient plus lentement, en murmurant des berceuses toutes tremblotantes.`,
+      `Une petite lumière tiède flottait dans l'air, semblable à une luciole endormie. Elle dansait paresseusement, de gauche à droite, de plus en plus lentement. ${pluriel?"Les enfants":"L'enfant"} la ${pluriel?"suivaient":"suivait"} des yeux, et à chaque va-et-vient, leurs paupières devenaient un peu plus lourdes, un peu plus douces, comme des rideaux qui se ferment tout doucement.`,
+      `On respirait un parfum délicieux de fleurs, de miel et de pain chaud, un parfum qui donnait envie de sourire et de fermer les yeux. Chaque respiration était plus lente que la précédente, plus profonde, plus tranquille. On inspirait le calme, on soufflait les petites fatigues de la journée, et tout devenait léger.`,
+      `Quelque part, une berceuse très douce résonnait, si discrète qu'on l'entendait à peine. C'était peut-être le vent, peut-être une fée, peut-être le cœur de la nuit elle-même. Cette mélodie sans paroles montait et descendait comme une vague tranquille, et elle enveloppait tout d'un calme profond et rassurant.`,
+      `Il faisait juste la bonne température, ni trop chaud ni trop froid, exactement comme un câlin qui dure longtemps. ${pluriel?"Les enfants se sentaient":"L'enfant se sentait"} en parfaite sécurité, ${pluriel?"entourés":"entouré"} de tendresse, comme dans les bras les plus doux du monde, là où rien ni personne ne peut faire peur.`,
+      `Au loin, les étoiles clignaient lentement, l'une après l'autre, comme si elles se souhaitaient bonne nuit entre elles. Le ciel ressemblait à un immense drap de velours bleu foncé, saupoudré de mille petites lumières argentées. Une étoile, plus brillante que les autres, semblait veiller tout particulièrement sur ${pluriel?"les enfants":"l'enfant"}.`,
+      `Tout était si paisible qu'on aurait pu entendre un flocon tomber. Les pensées devenaient douces et floues, comme des nuages qui passent dans un ciel de printemps. Plus rien n'était compliqué, plus rien n'était pressé : il n'y avait que le calme, tout doux, tout rond, comme un gros coussin moelleux où l'on peut se laisser tomber.`,
+      `Un petit animal tout doux passa sur la pointe des pattes, jeta un regard tendre aux rêveurs, puis s'en alla se coucher lui aussi. Partout, le monde se préparait pour la nuit : les oiseaux rentraient dans leurs nids, les poissons se cachaient sous les algues, et les papillons se posaient sur les fleurs endormies.`,
+      `Le ciel changea doucement de couleur, passant du rose au mauve, puis au bleu profond de la nuit. C'était comme un immense tableau peint tout exprès pour dire : « Il est temps de se reposer. » ${pluriel?"Les enfants":"L'enfant"} ${pluriel?"regardèrent":"regarda"} ce spectacle magnifique, émerveillé${pluriel?"s":""} et tranquille${pluriel?"s":""} à la fois.`,
+      `On se sentait bercé, tout doucement, comme dans un hamac suspendu entre deux nuages. À chaque balancement, la journée s'éloignait un peu plus, avec ses courses, ses rires et ses petites bêtises. Il ne restait que la douceur du soir et la promesse d'une belle nuit remplie de jolis rêves.`,
+      `Les compagnons se rapprochèrent, tout chauds, tout doux, et posèrent leur tête tout près. On entendait leur respiration lente et régulière, comme un petit moteur ronronnant de bonheur. C'était le son le plus rassurant du monde, celui qui dit : « Tu peux dormir, je veille sur toi. »`,
+      `Dans le lointain, on apercevait de petites maisons aux fenêtres éclairées d'une lumière orangée et chaleureuse. Dans chacune, des familles se disaient bonne nuit, se faisaient des câlins, éteignaient les lampes une à une. Le monde entier se blottissait pour la nuit, et c'était très beau à voir.`,
+      `Un nuage tout rond, tout blanc, passa lentement au-dessus. Il ressemblait à un gros oreiller moelleux, si tentant qu'on aurait voulu grimper dessus pour y faire un somme. Il flottait sans se presser, poussé par une brise si légère qu'elle n'aurait pas décoiffé une plume.`,
+      `Le silence de la nuit n'était pas un silence vide : il était plein de tout petits bruits doux. Le froissement d'une aile, le clapotis d'une goutte d'eau, le craquement tranquille d'une branche qui s'installe pour dormir. Tous ces sons formaient ensemble une musique très calme, faite pour bercer les rêveurs.`,
+      `On ferma les yeux un instant, juste pour sentir. La chaleur douce sur la peau, le parfum de la nuit, le poids agréable des couvertures. Quand on se sent aussi bien, aussi en sécurité, le sommeil arrive tout seul, sur la pointe des pieds, sans même qu'on s'en aperçoive.`,
+      `La lune, tout là-haut, souriait de son grand sourire argenté. Elle en avait vu, des enfants s'endormir, depuis le temps ! Et à chacun, elle offrait la même chose : une lumière douce, un peu de magie, et la promesse que le matin reviendrait, tout neuf et plein de soleil.`,
+      `Il n'y avait plus rien à faire, plus rien à dire, plus rien à penser. Juste être là, bien au chaud, et laisser la fatigue de la journée fondre comme un carré de chocolat au soleil. Chaque muscle se détendait, chaque petit souci s'envolait comme un ballon lâché dans le ciel.`,
+      `Une douce chaleur montait des pieds jusqu'à la tête, comme une gorgée de lait chaud. ${pluriel?"Les enfants":"L'enfant"} ${pluriel?"bâillèrent":"bâilla"} un grand coup, de ce bâillement délicieux qui annonce le sommeil. Les yeux se fermaient tout seuls, s'ouvraient encore un peu, puis se refermaient, de plus en plus longtemps.`,
+      `Au pays des rêves, on avait préparé pour ${pluriel?"eux":"lui ou elle"} les plus jolies aventures : des châteaux de nuages, des rivières de limonade, des amis rigolos et des câlins à n'en plus finir. Il suffisait de s'endormir pour que la porte s'ouvre en grand sur toutes ces merveilles.`,
+      `Tout doucement, le monde autour devint plus doux encore, plus flou, plus tendre, comme vu à travers un voile de coton. Les couleurs se mélangeaient gentiment, les sons s'éloignaient sur la pointe des pieds, et une paix immense, chaude et profonde, s'installa pour de bon.`
+    ];
+
+    const softPool = SOFT.slice();
+    const padding = (n) => {
+      const out = [];
+      for (let i=0; i<n && softPool.length; i++) {
+        const idx = Math.floor(Math.random()*softPool.length);
+        out.push(softPool.splice(idx,1)[0]);
+      }
+      return out;
+    };
+
+    return {
+      pick,
+      Cap: s => s.charAt(0).toUpperCase() + s.slice(1),
+      noms, liste, pluriel, padding,
+      kidData: KIDS.map(k => ({
+        name: k.name,
+        h: (choices[k.key]||{})["héros"] || "un gentil héros",
+        l: (choices[k.key]||{})["lieu"] || "un endroit magique",
+        comp: (choices[k.key]||{})["compagnon"] || "un doux ami"
+      }))
+    };
+  }
+
+  // Dispatcher : choisit un scénario au hasard chaque soir
+  function fallbackStory(choices) {
+    const scenarios = [scenarioVoyage, scenarioMission, scenarioFete, scenarioCabane,
+                       scenarioTrain, scenarioMer, scenarioEtoiles, scenarioJardin, scenarioMontgolfiere];
+    const fn = scenarios[Math.floor(Math.random()*scenarios.length)];
+    return fn(choices);
+  }
+
+  // ---------- Scénario 1 : le grand voyage ----------
+  function scenarioVoyage(choices) {
+    const { pick, Cap, noms, liste, pluriel, kidData, padding } = storyCtx(choices);
+    const ILS = pluriel ? "ils" : "il ou elle";
+    const paragraphs = [];
+
+    // --- Intro (variantes) ---
+    const intros = [
+      `Il était une fois, quand la nuit posait tout doucement son grand manteau bleu sur le monde, ${pluriel ? "des enfants qui s'appelaient" : "un enfant qui s'appelait"} ${liste}. Ce soir-là, avant de fermer les yeux, ${ILS} ${pluriel?"partirent":"partit"} pour un voyage merveilleux qui n'existe que dans les rêves les plus doux.`,
+      `Ce soir-là, la lune s'était levée toute ronde et toute dorée au-dessus des toits. ${Cap(liste)} ${pluriel?"se glissèrent":"se glissa"} sous la couette, et à peine ${pluriel?"leurs yeux":"son œil"} ${pluriel?"se fermèrent-ils":"se ferma-t-il"} qu'un grand voyage commença, tout doux, tout calme.`,
+      `Dans le pays des rêves, il existe un chemin que seuls les enfants sages peuvent trouver le soir venu. Cette nuit, c'était au tour de ${liste} de l'emprunter, sur la pointe des pieds, le cœur tout léger.`,
+      `Quand la dernière lumière de la maison s'éteignit, une petite étoile fit un clin d'œil à ${liste}. « Suis-moi, murmura-t-elle, je connais le plus joli des rêves. » Et le voyage commença tout doucement.`
+    ];
+    paragraphs.push(pick(intros));
+
+    // --- Un paragraphe de voyage par enfant (variantes) ---
+    kidData.forEach(({name, h, l, comp}) => {
+      const voyages = [
+        `${name} avait rendez-vous avec ${h}, tout près de ${l}. L'air sentait bon et, à chaque pas, de minuscules lumières scintillaient comme des lucioles endormies. À ses côtés marchait ${comp}, qui connaissait tous les chemins et n'avait jamais peur du noir. « Viens, dit-il d'une voix douce comme du velours, je vais te montrer l'endroit le plus calme du monde. »`,
+        `Là-bas, dans ${l}, ${name} retrouva ${h} qui l'attendait avec un grand sourire. ${Cap(comp)} les rejoignit en sautillant de bonheur. Ensemble, ils marchèrent sans se presser, écoutant le silence tout doux de la nuit et le petit bruit de leurs pas sur le chemin.`,
+        `Le voyage de ${name} commença dans ${l}, un endroit si paisible qu'on y parlait tout bas. ${Cap(h)} lui prit la main, et ${comp} ouvrit la marche. « N'aie aucune crainte, souffla ${comp}, ici tout le monde est gentil et la nuit est notre amie. »`,
+        `${name} ferma les yeux et se retrouva aussitôt dans ${l}. ${Cap(h)} était là, ainsi que ${comp}, son fidèle ami. Tous les trois s'installèrent au calme pour regarder le ciel changer tout doucement de couleur, du bleu au violet, puis au bleu de nuit.`
+      ];
+      paragraphs.push(pick(voyages));
+    });
+
+    // --- Retrouvailles ---
+    if (pluriel) {
+      const retro = [
+        `Et puis, comme par magie, tous les chemins se rejoignirent. ${liste} se retrouvèrent au même endroit, tout étonnés et tout contents. Leurs amis formèrent une grande ronde, et l'on entendit des petits rires clairs rouler dans la nuit, légers comme des bulles de savon.`,
+        `Sans savoir comment, ${liste} arrivèrent tous au même endroit, sous un grand arbre argenté. Ils se serrèrent dans les bras, ravis d'être réunis, et leurs compagnons dansèrent une ronde toute douce autour d'eux.`,
+        `Le hasard des rêves fit que ${liste} se croisèrent au bord d'un ruisseau qui chantait. Quelle joie de se retrouver ! Ensemble, c'était encore plus doux, et la nuit sembla leur sourire.`
+      ];
+      paragraphs.push(pick(retro));
+    }
+
+    // --- Jeu calme ---
+    paragraphs.push(pick([
+      `${pluriel?"Ensemble, ils jouèrent":liste+" joua"} encore un tout petit peu, à des jeux très calmes : compter les étoiles filantes, souffler sur des graines de pissenlit, écouter au loin le hululement d'une chouette bienveillante. Personne ne courait. C'était le moment le plus doux de la journée.`,
+      `${pluriel?"Ils s'amusèrent":liste+" s'amusa"} à des jeux tout tranquilles : suivre du doigt le dessin des constellations, faire des vœux, chercher des formes rigolotes dans les nuages du soir. Tout était lent, tout était paisible.`
+    ]));
+
+    // --- Étoiles ---
+    paragraphs.push(pick([
+      `${pluriel?"Tous ensemble, ils s'allongèrent":liste+" s'allongea"} dans l'herbe tiède pour regarder le ciel. Une à une, les étoiles s'allumaient, comme si quelqu'un, tout là-haut, allumait de minuscules bougies rien que pour ${pluriel?"eux":"lui ou elle"}. On en comptait trois, puis cinq, puis on perdait le compte.`,
+      `Le ciel se couvrit d'étoiles, si nombreuses qu'on aurait dit du sucre glace saupoudré sur du velours bleu. ${Cap(liste)} ${pluriel?"les regardèrent":"les regarda"} briller, émerveillé${pluriel?"s":""}, en sentant le sommeil venir tout doucement.`
+    ]));
+
+    // --- Berceuse ---
+    paragraphs.push(pick([
+      `Le vent se leva tout doucement et se mit à chanter une berceuse très ancienne, celle que la nuit chante à tous les enfants du monde depuis toujours. Les arbres balançaient leurs branches en mesure, et la lune souriait.`,
+      `Une brise tiède passa en fredonnant un air très doux. Les feuilles murmuraient, le ruisseau répondait, et toute la nature semblait chanter une berceuse rien que pour endormir les rêveurs.`
+    ]));
+
+    // --- Endormissement + fin ---
+    paragraphs.push(pick([
+      `Les compagnons se blottirent tout près. « Il est temps de se reposer, murmurèrent-ils. Demain sera un autre jour, plein de soleil et de jeux. » Et ${liste} ${pluriel?"bâillèrent":"bâilla"} très fort, ce qui fit sourire tout le monde.`,
+      `« Fermez les yeux, chuchotèrent les amis. Nous veillons sur vous. » ${Cap(liste)} ${pluriel?"se pelotonnèrent":"se pelotonna"} contre leur douce fourrure, au chaud, en parfaite sécurité.`
+    ]));
+    paragraphs.push(`Alors, ${pluriel?"blottis":"blotti"} contre leurs amis, ${liste} ${pluriel?"sentirent leurs paupières devenir toutes lourdes":"sentit ses paupières devenir toutes lourdes"}. Le monde devint doux et flou, comme un joli dessin qu'on regarde les yeux à moitié fermés. Les étoiles veillaient, la lune montait la garde.`);
+    paragraphs.push(...padding(20));
+    paragraphs.push(`Et tout doucement, sans même s'en rendre compte, ${liste} ${pluriel?"glissèrent":"glissa"} dans le sommeil, ${pluriel?"emportés":"emporté"} vers les plus beaux rêves, remplis de rires, de couleurs et de tendresse. ${noms.map(n => "Dors bien, " + n + ".").join(" ")} La nuit vous garde, et demain vous attend. Bonne nuit. 🌙`);
+
+    const titres = ["Le grand voyage tout doux","La nuit des étoiles","Le chemin des rêves","Une nuit toute douce","Le voyage au pays du sommeil"];
+    return { title: pick(titres), paragraphs };
+  }
+
+  // ---------- Scénario 2 : la petite mission ----------
+  function scenarioMission(choices) {
+    const { pick, Cap, noms, liste, pluriel, kidData, padding } = storyCtx(choices);
+    const p = [];
+    const objets = ["une étoile tombée du ciel","une clé en argent","une plume magique","un grelot d'or","une graine de lune","un coquillage chantant"];
+    const objet = pick(objets);
+    p.push(pick([
+      `Cette nuit-là, la Lune avait un petit souci : elle avait perdu ${objet}, et sans ${pluriel?"elle":"lui"}, elle n'arrivait plus à bien éclairer les rêves. Elle appela tout doucement ${liste} pour l'aider.`,
+      `Un messager tout doux frappa à la fenêtre de ${liste} : « La Lune a besoin d'aide ! Elle a égaré ${objet}. Voulez-vous partir la chercher, sans bruit, à travers le pays des rêves ? »`
+    ]));
+    kidData.forEach(({name, h, l, comp}) => {
+      p.push(pick([
+        `${name} accepta aussitôt. Accompagné${pluriel?"":"(e)"} de ${h} et de ${comp}, ${name} se rendit dans ${l}, où l'on disait que ${objet} avait peut-être roulé. Ils cherchèrent avec des gestes tout doux, en écartant les fleurs et en soulevant les feuilles.`,
+        `Dans ${l}, ${name}, ${h} et ${comp} avancèrent à pas de velours. « Cherchons bien, mais tout doucement, chuchota ${comp}, la nuit aime le calme. » Et ils fouillèrent le moindre recoin en riant tout bas.`
+      ]));
+    });
+    p.push(pick([
+      `Et devinez quoi ? ${objet.charAt(0).toUpperCase()+objet.slice(1)} brillait justement là, cachée sous un buisson endormi ! ${pluriel?"Ils la ramassèrent":liste+" la ramassa"} avec précaution, le cœur tout content.`,
+      `Après une longue recherche pleine de douceur, ${objet} fut enfin retrouvé, scintillant dans l'herbe. Quelle joie ! Tout le monde se félicita à voix basse pour ne pas réveiller la nuit.`
+    ]));
+    p.push(`${pluriel?"Ils rapportèrent":liste+" rapporta"} ${objet} à la Lune, qui remercia mille fois. Aussitôt, elle brilla de nouveau, plus douce et plus argentée que jamais, et couvrit le monde d'une lumière tendre.`);
+    p.push(pick([
+      `« Pour vous remercier, dit la Lune, je vais veiller sur votre sommeil toute la nuit. » Et une berceuse argentée descendit du ciel, enveloppant ${liste} comme une couverture tiède.`,
+      `En récompense, la Lune souffla sur ${liste} une poussière d'étoiles magique qui apporte les plus beaux rêves. Les paupières devinrent lourdes, lourdes…`
+    ]));
+    p.push(...padding(20));
+    p.push(`Alors ${liste} ${pluriel?"se blottirent":"se blottit"} bien au chaud, ${pluriel?"entourés":"entouré"} de leurs amis. ${noms.map(n=>"Dors bien, "+n+".").join(" ")} La mission est réussie, et la nuit est douce. Bonne nuit. 🌙`);
+    return { title: pick(["La mission de la Lune","À la recherche de "+objet,"Le trésor de la nuit","La petite quête étoilée"]), paragraphs:p };
+  }
+
+  // ---------- Scénario 3 : la fête tranquille ----------
+  function scenarioFete(choices) {
+    const { pick, Cap, noms, liste, pluriel, kidData, padding } = storyCtx(choices);
+    const p = [];
+    p.push(pick([
+      `Ce soir-là, tout le pays des rêves préparait une fête très spéciale : la fête du Silence Doux, celle où l'on célèbre le calme et les câlins. ${Cap(liste)} ${pluriel?"y étaient invités":"y était invité(e)"} d'honneur !`,
+      `Une invitation scintillante arriva en flottant jusqu'à ${liste} : « Vous êtes convié${pluriel?"s":""} à la plus douce des fêtes, là où l'on danse tout doucement et où l'on chuchote des secrets gentils. »`
+    ]));
+    kidData.forEach(({name, h, l, comp}) => {
+      p.push(pick([
+        `${name} s'y rendit avec ${h} et ${comp}. La fête se tenait dans ${l}, décoré de mille petites lumières. On y buvait du lait tiède au miel et l'on grignotait des nuages sucrés.`,
+        `Dans ${l}, ${name} retrouva ${h} et ${comp}, tout beaux pour l'occasion. Des lampions doux flottaient dans l'air, et une musique très calme invitait à se balancer lentement.`
+      ]));
+    });
+    if (pluriel) {
+      p.push(`Tous les invités se retrouvèrent au même endroit : ${liste} et leurs compagnons formèrent une ronde paisible, tournant tout doucement sous les étoiles, main dans la main.`);
+    }
+    p.push(pick([
+      `On dansa des danses tranquilles, on fit des vœux en soufflant sur des bougies parfumées, et chacun raconta son plus joli souvenir de la journée. Les rires étaient tout doux, comme des murmures.`,
+      `La fête était si paisible qu'on entendait les papillons de nuit battre des ailes. On partagea des gâteaux à la lune et l'on se fit de gros câlins tout chauds.`
+    ]));
+    p.push(`Puis, petit à petit, la musique ralentit. Les lampions s'éteignirent un à un. C'était l'heure de la dernière danse, la plus lente de toutes, celle qui mène tout droit au sommeil.`);
+    p.push(...padding(20));
+    p.push(`${Cap(liste)} ${pluriel?"remercièrent":"remercia"} pour cette belle fête, ${pluriel?"firent":"fit"} un dernier câlin à leurs amis, et ${pluriel?"s'installèrent":"s'installa"} confortablement. ${noms.map(n=>"Dors bien, "+n+".").join(" ")} La fête est finie, place aux rêves. Bonne nuit. 🌙`);
+    return { title: pick(["La fête du Silence Doux","La ronde des étoiles","La plus douce des fêtes","La danse de la nuit"]), paragraphs:p };
+  }
+
+  // ---------- Scénario 4 : la cabane des rêves ----------
+  function scenarioCabane(choices) {
+    const { pick, Cap, noms, liste, pluriel, kidData, padding } = storyCtx(choices);
+    const p = [];
+    p.push(pick([
+      `Au creux de la nuit, ${liste} ${pluriel?"découvrirent":"découvrit"} une cabane toute douce, cachée entre les nuages. À l'intérieur, il y avait des coussins moelleux, des couvertures toutes chaudes et une petite lumière dorée.`,
+      `Il existe, tout là-haut, une cabane secrète où viennent se reposer les rêveurs. Ce soir, c'est ${liste} qui ${pluriel?"en poussèrent":"en poussa"} la porte, sur la pointe des pieds.`
+    ]));
+    kidData.forEach(({name, h, l, comp}) => {
+      p.push(pick([
+        `${name} arriva avec ${h} et ${comp}, tout droit venus de ${l}. Ils s'installèrent près de la fenêtre pour regarder ${l} scintiller au loin, tout endormi sous les étoiles.`,
+        `${name}, ${h} et ${comp} avaient marché depuis ${l}. Fatigués mais heureux, ils choisirent chacun un coussin bien douillet et s'y laissèrent tomber avec un soupir de bonheur.`
+      ]));
+    });
+    p.push(pick([
+      `Dans la cabane, on se raconta des histoires tout bas, on partagea une tisane à la fleur d'oranger, et l'on écouta la pluie fine tambouriner doucement sur le toit. C'était si cosy.`,
+      `Blottis ensemble, ${pluriel?"ils regardèrent":liste+" regarda"} les ombres douces danser sur les murs à la lueur de la bougie. Dehors, le vent chantait, mais dedans, tout était chaud et tranquille.`
+    ]));
+    p.push(`Peu à peu, les paupières devinrent lourdes. La petite lumière dorée baissa, baissa, comme une bougie qu'on souffle tout doucement. Les compagnons bâillèrent à leur tour.`);
+    p.push(...padding(20));
+    p.push(`Alors, ${pluriel?"pelotonnés":"pelotonné"} sous les couvertures, ${liste} ${pluriel?"fermèrent":"ferma"} les yeux, bercé${pluriel?"s":""} par le bruit de la pluie et la chaleur de la cabane. ${noms.map(n=>"Dors bien, "+n+".").join(" ")} La cabane veille sur vos rêves. Bonne nuit. 🌙`);
+    return { title: pick(["La cabane des rêves","La cabane dans les nuages","Le refuge tout doux","La maison des rêveurs"]), paragraphs:p };
+  }
+
+  // ---------- Scénario 5 : le train de nuit ----------
+  function scenarioTrain(choices) {
+    const { pick, Cap, noms, liste, pluriel, kidData, padding } = storyCtx(choices);
+    const p = [];
+    p.push(pick([
+      `Toute la nuit, un petit train magique traverse le pays des rêves en faisant « tchou-tchou » tout doucement. Ce soir, il s'arrêta juste devant ${liste} : « En voiture pour le pays du sommeil ! »`,
+      `Un train tout doux, aux wagons moelleux comme des oreillers, glissa sans bruit jusqu'à ${liste}. Le contrôleur, un vieux hibou gentil, poinçonna leurs billets faits d'étoiles.`
+    ]));
+    kidData.forEach(({name, h, l, comp}) => {
+      p.push(pick([
+        `${name} monta avec ${h} et ${comp}, et s'installa près de la fenêtre. Dehors défilait ${l}, tout scintillant dans la nuit. Le train berçait doucement ses passagers, cahin-caha.`,
+        `Dans son wagon, ${name} colla son nez à la vitre avec ${comp} pendant que ${h} racontait des histoires. On voyait passer ${l}, puis des forêts, puis des lacs argentés.`
+      ]));
+    });
+    p.push(pick([
+      `Le train traversa un tunnel d'étoiles, puis un pont au-dessus d'une rivière de lait tiède. Le paysage devenait de plus en plus doux, de plus en plus flou.`,
+      `À mesure que le train avançait, les lumières dehors se faisaient plus tendres. Le balancement des wagons était si agréable qu'on avait envie de fermer les yeux.`
+    ]));
+    p.push(`Le contrôleur passa distribuer des couvertures toutes chaudes et un peu de lait au miel. « Prochain arrêt : le pays des rêves », annonça-t-il d'une voix douce comme du coton.`);
+    p.push(...padding(20));
+    p.push(`Bercé${pluriel?"s":""} par le « tchou-tchou » régulier, ${liste} ${pluriel?"sentirent":"sentit"} le sommeil venir. ${noms.map(n=>"Dors bien, "+n+".").join(" ")} Le train vous emmène vers de beaux rêves. Bonne nuit. 🌙`);
+    return { title: pick(["Le train de nuit","Le petit train des rêves","En voiture pour le sommeil","Le train des étoiles"]), paragraphs:p };
+  }
+
+  // ---------- Scénario 6 : sous la mer ----------
+  function scenarioMer(choices) {
+    const { pick, Cap, noms, liste, pluriel, kidData, padding } = storyCtx(choices);
+    const p = [];
+    p.push(pick([
+      `Cette nuit, une bulle magique enveloppa ${liste} et les emmena tout doucement au fond de la mer, là où l'eau est tiède et où tout flotte lentement, sans le moindre bruit.`,
+      `Une sirène amie fit signe à ${liste} : « Venez, l'océan du soir est le plus calme des mondes. » Et hop, ${pluriel?"ils purent":"il ou elle put"} respirer sous l'eau comme des poissons.`
+    ]));
+    kidData.forEach(({name, h, l, comp}) => {
+      p.push(pick([
+        `${name} nagea avec ${h} et ${comp} au milieu des poissons multicolores. Ils passèrent près de ${l}, qui se reflétait joliment à la surface, tout là-haut.`,
+        `Entouré${pluriel?"":"(e)"} de ${h} et de ${comp}, ${name} glissa dans l'eau douce en faisant de grandes bulles argentées. Des méduses lumineuses éclairaient le chemin comme des lampions.`
+      ]));
+    });
+    p.push(pick([
+      `Ils se posèrent sur un lit d'algues moelleuses, tout au fond, là où le courant berce comme un hamac. Des hippocampes dansaient une valse lente autour d'eux.`,
+      `Une baleine géante et très gentille passa en chantant une longue mélodie grave et douce, qui résonnait dans toute la mer comme une berceuse des profondeurs.`
+    ]));
+    p.push(`Les coquillages se refermèrent un à un pour la nuit, les poissons ralentirent, et la lumière de la lune, filtrée par l'eau, devint toute bleutée et paisible.`);
+    p.push(...padding(20));
+    p.push(`Bercé${pluriel?"s":""} par les vagues douces, ${liste} ${pluriel?"fermèrent":"ferma"} les yeux au fond de l'océan tranquille. ${noms.map(n=>"Dors bien, "+n+".").join(" ")} La mer veille sur vos rêves. Bonne nuit. 🌙`);
+    return { title: pick(["Sous la mer étoilée","Le rêve des profondeurs","La berceuse de la baleine","Au fond de l'océan doux"]), paragraphs:p };
+  }
+
+  // ---------- Scénario 7 : la chasse aux étoiles ----------
+  function scenarioEtoiles(choices) {
+    const { pick, Cap, noms, liste, pluriel, kidData, padding } = storyCtx(choices);
+    const p = [];
+    p.push(pick([
+      `Ce soir, le ciel avait besoin d'aide : quelques étoiles s'étaient endormies et ne brillaient plus. ${Cap(liste)} ${pluriel?"furent chargés":"fut chargé(e)"} de les rallumer, tout doucement, avec un petit souffle magique.`,
+      `On confia à ${liste} une jolie mission : parcourir le ciel avec un filet de lumière pour récolter les étoiles filantes et les remettre à leur place avant le matin.`
+    ]));
+    kidData.forEach(({name, h, l, comp}) => {
+      p.push(pick([
+        `${name}, porté${pluriel?"":"(e)"} par ${h}, s'envola au-dessus de ${l}. Avec ${comp}, ils rallumèrent une à une les étoiles endormies d'un petit souffle tout tendre : pfff, et hop, ça brillait de nouveau !`,
+        `Depuis ${l}, ${name} tendit la main vers le ciel. ${Cap(h)} l'aida à grimper de nuage en nuage, tandis que ${comp} attrapait les étoiles filantes dans un grand filet doux.`
+      ]));
+    });
+    p.push(pick([
+      `Bientôt, tout le ciel scintilla de nouveau, plus beau que jamais. Chaque étoile clignait pour dire merci, et la Voie lactée traça un grand sourire lumineux.`,
+      `Une à une, les étoiles se rallumèrent, et le ciel redevint une immense couverture de lumières douces. Quel travail magnifique !`
+    ]));
+    p.push(`Fatigué${pluriel?"s":""} mais fier${pluriel?"s":""}, ${liste} ${pluriel?"redescendirent":"redescendit"} tout doucement se poser sur un nuage moelleux, pendant que les étoiles veillaient à leur tour sur ${pluriel?"eux":"lui ou elle"}.`);
+    p.push(...padding(20));
+    p.push(`Blotti${pluriel?"s":""} sur leur nuage tiède, ${liste} ${pluriel?"baillèrent":"bailla"} en regardant leur beau travail scintiller. ${noms.map(n=>"Dors bien, "+n+".").join(" ")} Le ciel brille grâce à vous. Bonne nuit. 🌙`);
+    return { title: pick(["La chasse aux étoiles","Les rallumeurs d'étoiles","La nuit qui rebrille","Le filet de lumière"]), paragraphs:p };
+  }
+
+  // ---------- Scénario 8 : le jardin secret ----------
+  function scenarioJardin(choices) {
+    const { pick, Cap, noms, liste, pluriel, kidData, padding } = storyCtx(choices);
+    const p = [];
+    p.push(pick([
+      `Derrière une petite porte cachée que l'on ne voit qu'au clair de lune, il existe un jardin secret où poussent les rêves. Ce soir, la porte s'ouvrit toute seule pour ${liste}.`,
+      `${Cap(liste)} ${pluriel?"trouvèrent":"trouva"} une clé de rosée sous un pétale, et cette clé ouvrait le plus doux des endroits : le jardin des rêves, tout fleuri et endormi.`
+    ]));
+    kidData.forEach(({name, h, l, comp}) => {
+      p.push(pick([
+        `${name} entra avec ${h} et ${comp}. Le jardin ressemblait un peu à ${l}, en plus tendre encore. Des fleurs en clochettes tintaient doucement, et des lucioles dessinaient des chemins de lumière.`,
+        `Guidé${pluriel?"":"(e)"} par ${comp}, ${name} découvrit des massifs de fleurs qui bâillaient, des arbres à bonbons et une fontaine de lait tiède. ${Cap(h)} cueillit une fleur de sommeil rien que pour ${name}.`
+      ]));
+    });
+    p.push(pick([
+      `Au centre du jardin, il y avait un hamac géant tissé de fils de lune. Tout le monde s'y installa, et le hamac se balança tout doucement dans la brise parfumée.`,
+      `Les fleurs, en se refermant pour la nuit, libéraient un parfum si doux qu'il donnait envie de bâiller. Une chorale de grillons joua une berceuse toute discrète.`
+    ]));
+    p.push(`La lune arrosa le jardin d'une pluie de lumière argentée. Les derniers papillons se posèrent, les clochettes se turent, et tout devint calme et parfumé.`);
+    p.push(...padding(20));
+    p.push(`Dans le hamac de lune, ${liste} ${pluriel?"se laissèrent":"se laissa"} bercer par le parfum des fleurs de sommeil. ${noms.map(n=>"Dors bien, "+n+".").join(" ")} Le jardin secret garde vos rêves. Bonne nuit. 🌙`);
+    return { title: pick(["Le jardin secret","Le jardin des rêves","La clé de rosée","Le hamac de lune"]), paragraphs:p };
+  }
+
+  // ---------- Scénario 9 : la montgolfière ----------
+  function scenarioMontgolfiere(choices) {
+    const { pick, Cap, noms, liste, pluriel, kidData, padding } = storyCtx(choices);
+    const p = [];
+    p.push(pick([
+      `Au bout du jardin attendait une montgolfière toute douce, gonflée de nuages tièdes. « Montez, murmura-t-elle, je vais vous emmener très haut, là où les rêves flottent. » ${Cap(liste)} ${pluriel?"grimpèrent":"grimpa"} dans la nacelle moelleuse.`,
+      `Une montgolfière aux couleurs du coucher de soleil se posa près de ${liste}. Sa nacelle était remplie de coussins et de couvertures. Il n'y avait plus qu'à monter et à se laisser porter.`
+    ]));
+    kidData.forEach(({name, h, l, comp}) => {
+      p.push(pick([
+        `${name} s'installa avec ${h} et ${comp}. La montgolfière s'éleva tout doucement au-dessus de ${l}, qui devenait tout petit, tout joli, comme un décor de poche.`,
+        `Accoudé${pluriel?"s":"(e)"} au bord de la nacelle, ${name} et ${comp} regardaient ${l} rétrécir en dessous, pendant que ${h} pointait du doigt les étoiles qui se rapprochaient.`
+      ]));
+    });
+    p.push(pick([
+      `On montait, on montait, tout doucement, jusqu'à effleurer les nuages qui ressemblaient à de la barbe à papa. On pouvait presque les attraper à pleines mains.`,
+      `La montgolfière traversa un banc de nuages roses, puis flotta au milieu des étoiles. Tout était silencieux, tout était léger, comme un grand soupir de bien-être.`
+    ]));
+    p.push(`Là-haut, le temps semblait suspendu. La nacelle se balançait à peine, bercée par un vent tiède. Les compagnons se serrèrent les uns contre les autres, tout au chaud.`);
+    p.push(...padding(20));
+    p.push(`Porté${pluriel?"s":""} par les nuages, ${liste} ${pluriel?"fermèrent":"ferma"} les yeux tout en haut du ciel, en parfaite sécurité. ${noms.map(n=>"Dors bien, "+n+".").join(" ")} La montgolfière veille sur vos rêves. Bonne nuit. 🌙`);
+    return { title: pick(["Le voyage en montgolfière","Tout là-haut dans les nuages","La nacelle des rêves","Le ballon du soir"]), paragraphs:p };
+  }
+
+  // ---------- Lecture à voix haute ----------
+  let lastStoryText = "";
+  let speaking = false;
+  elReadBtn.addEventListener('click', () => {
+    if (!('speechSynthesis' in window)) {
+      elReadBtn.textContent = "Lecture non dispo";
+      return;
+    }
+    if (speaking) {
+      window.speechSynthesis.cancel();
+      speaking = false;
+      elReadBtn.textContent = "🔊 Lire à voix haute";
+      return;
+    }
+    const u = new SpeechSynthesisUtterance(lastStoryText);
+    u.lang = 'fr-FR';
+    u.rate = 0.9;
+    u.pitch = 1.05;
+    u.onend = () => { speaking = false; elReadBtn.textContent = "🔊 Lire à voix haute"; };
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(u);
+    speaking = true;
+    elReadBtn.textContent = "⏸ Arrêter la lecture";
+  });
+
+  elStoryDoneBtn.addEventListener('click', () => {
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    speaking = false;
+    elReadBtn.textContent = "🔊 Lire à voix haute";
+    dots[current].classList.add('done');
+    current++;
+    renderStep();
+  });
+  // ================= FIN MODULE HISTOIRE =================
+
+  // ================= MODULE JEU =================
+  // players = KIDS (accès direct)
+
+  const elTurnBadge   = document.getElementById('turnBadge');
+  const elGameLoading = document.getElementById('gameLoading');
+  const elLoadingSub  = document.getElementById('loadingSub');
+  const elGameCard    = document.getElementById('gameCard');
+  const elKidDone     = document.getElementById('gameKidDone');
+  const elQEmoji      = document.getElementById('qEmoji');
+  const elQCount      = document.getElementById('qCount');
+  const elQText       = document.getElementById('qText');
+  const elQAnswers    = document.getElementById('qAnswers');
+  const elQFeedback   = document.getElementById('qFeedback');
+  const elKidDoneTitle= document.getElementById('kidDoneTitle');
+  const elKidDoneText = document.getElementById('kidDoneText');
+  const elKidDoneBtn  = document.getElementById('kidDoneBtn');
+
+  let gPlayerIndex = 0;   // position dans gOrder
+  let gOrder = [];        // ordre de passage des enfants (indices dans KIDS)
+  let gQuestions = [];
+  let gQIndex = 0;
+  let gCorrect = 0;
+
+  function showGamePanel(which) {
+    elGameLoading.style.display = which==='loading' ? 'block' : 'none';
+    elGameCard.style.display    = which==='question' ? 'block' : 'none';
+    elKidDone.style.display     = which==='kiddone' ? 'block' : 'none';
+  }
+
+  // Lance toute la séquence de jeu (appelée par renderStep)
+  function startGame() {
+    // Ordre de passage : on décale le départ selon le jour (rotation équitable)
+    const dayNum = Math.floor(Date.now() / 86400000);
+    const start = KIDS.length ? dayNum % KIDS.length : 0;
+    gOrder = KIDS.map((_,i) => (start + i) % KIDS.length);
+    gPlayerIndex = 0;
+    show('game');
+    startKidTurn();
+  }
+
+  function currentGamePlayer() { return KIDS[gOrder[gPlayerIndex]]; }
+
+  async function startKidTurn() {
+    const p = currentGamePlayer();
+    elTurnBadge.textContent = "À toi, " + p.name + " !";
+    elTurnBadge.style.background = p.color;
+    elLoadingSub.textContent = "On invente un jeu rien que pour " + p.name + " 🎲";
+    showGamePanel('loading');
+    gQuestions = await fetchGame(p);
+    gQIndex = 0;
+    gCorrect = 0;
+    renderQuestion();
+  }
+
+  function renderQuestion() {
+    const q = gQuestions[gQIndex];
+    showGamePanel('question');
+    elQEmoji.textContent = q.emoji || "❓";
+    elQCount.textContent = `Question ${gQIndex+1} sur ${gQuestions.length}`;
+    elQText.textContent = q.question;
+    elQFeedback.textContent = "";
+    elQAnswers.innerHTML = "";
+    q.answers.forEach((ans, i) => {
+      const b = document.createElement('button');
+      b.className = 'kid-btn';
+      b.style.background = currentGamePlayer().color;
+      b.style.boxShadow = '0 5px 0 rgba(61,58,107,0.3)';
+      b.style.width = '100%';
+      b.style.fontSize = '22px';
+      b.textContent = ans;
+      b.addEventListener('click', () => answerQuestion(i, b), { once:false });
+      elQAnswers.appendChild(b);
+    });
+  }
+
+  let answering = false;
+  function answerQuestion(i, btn) {
+    if (answering) return;
+    answering = true;
+    const q = gQuestions[gQIndex];
+    const buttons = [...elQAnswers.children];
+    buttons.forEach(b => b.style.pointerEvents = 'none');
+    if (i === q.correct) {
+      btn.style.background = 'var(--mint)';
+      elQFeedback.style.color = '#3a9e78';
+      elQFeedback.textContent = "Bravo ! 🎉";
+      gCorrect++;
+      playChime('step');
+      burstConfetti();
+    } else {
+      btn.style.background = '#e0796f';
+      elQFeedback.style.color = '#c25a50';
+      // montrer la bonne réponse
+      buttons[q.correct].style.background = 'var(--mint)';
+      elQFeedback.textContent = "C'était : " + q.answers[q.correct];
+      playChime('tap');
+    }
+    setTimeout(() => {
+      answering = false;
+      gQIndex++;
+      if (gQIndex < gQuestions.length) {
+        renderQuestion();
+      } else {
+        endKidTurn();
+      }
+    }, 1600);
+  }
+
+  function endKidTurn() {
+    const p = currentGamePlayer();
+    // une étoile bonus si au moins la moitié des réponses sont bonnes
+    const bonus = gCorrect >= Math.ceil(gQuestions.length / 2);
+    if (bonus) {
+      scores[p.key] = (scores[p.key]||0) + 1;
+      refreshScoreDisplays();
+    }
+    elKidDoneTitle.textContent = "Bravo " + p.name + " !";
+    elKidDoneText.textContent = gCorrect + " bonne" + (gCorrect>1?"s":"") + " réponse" + (gCorrect>1?"s":"")
+      + " sur " + gQuestions.length + (bonus ? " — une étoile en plus ⭐" : "");
+    const isLast = gPlayerIndex >= gOrder.length - 1;
+    const next = isLast ? null : KIDS[gOrder[gPlayerIndex+1]];
+    elKidDoneBtn.textContent = isLast ? "On continue le rituel →" : ("Au tour de " + next.name + " →");
+    elKidDoneBtn.style.background = p.color;
+    showGamePanel('kiddone');
+    playChime('win');
+  }
+
+  elKidDoneBtn.addEventListener('click', () => {
+    if (gPlayerIndex < gOrder.length - 1) {
+      // enfant suivant
+      gPlayerIndex++;
+      startKidTurn();
+    } else {
+      // tous ont joué : on valide l'étape et on reprend le rituel
+      dots[current].classList.add('done');
+      current++;
+      renderStep();
+    }
+  });
+
+  // ---------- Génération du jeu (API Claude, avec fallback) ----------
+  // Mémoire des types récemment utilisés, par enfant (évite les répétitions)
+  const recentTypes = {};
+  const GAME_TYPES = [
+    "trouver l'intrus parmi 3 images",
+    "compter des objets (emojis) et donner le nombre",
+    "vrai ou faux sur un animal ou la nature",
+    "reconnaître une couleur",
+    "quel son / cri fait cet animal",
+    "reconnaître une forme (rond, carré, triangle)",
+    "devinette : de quel animal s'agit-il",
+    "quel objet va avec l'autre (associer)",
+    "grand ou petit / plus ou moins",
+    "quelle saison ou quel moment de la journée"
+  ];
+  // Types actuellement activés (modifiable dans les réglages) — tous par défaut
+  let enabledGameTypes = [...GAME_TYPES];
+
+  function pickGameType(playerKey) {
+    const base = enabledGameTypes.length ? enabledGameTypes : GAME_TYPES;
+    if (!recentTypes[playerKey]) recentTypes[playerKey] = [];
+    const recent = recentTypes[playerKey];
+    const avail = base.filter(t => !recent.includes(t));
+    const pool = avail.length ? avail : base;
+    const chosen = pool[Math.floor(Math.random()*pool.length)];
+    recent.push(chosen);
+    if (recent.length > 4) recent.shift(); // on ne garde que les 4 derniers
+    return chosen;
+  }
+
+  async function fetchGame(player) {
+    const forcedType = pickGameType(player.key);
+    if (!recentTypes[player.key]) recentTypes[player.key] = [];
+    const avoid = recentTypes[player.key].slice(0,-1);
+    const seed = Math.random().toString(36).slice(2,7); // graine pour forcer la variété
+    const theme = (gameThemes[player.key] || "").trim();
+    const themeLine = theme
+      ? `THÈME DEMANDÉ : "${theme}". Les questions doivent tourner autour de ce thème (mais rester simples et calmes).`
+      : "";
+    // Calibrage fin selon l'âge exact
+    let niveau;
+    const age = player.age;
+    if (age <= 3) niveau = "extrêmement simple : reconnaître un animal ou une couleur, compter jusqu'à 3, une seule idée par question, mots très courts";
+    else if (age <= 5) niveau = "très simple : vocabulaire de base, compter jusqu'à 5, couleurs et animaux familiers";
+    else if (age <= 7) niveau = "simple avec un petit défi : additions jusqu'à 10, petites devinettes, mots familiers";
+    else niveau = "un peu plus stimulant : additions/soustractions jusqu'à 20, devinettes logiques, culture générale enfant";
+
+    const catKey = gameCategories[player.key] || "melange";
+    const catMap = {
+      calcul: "uniquement du CALCUL (additions, soustractions, compter, nombres) adapté à l'âge",
+      culture: "uniquement de la CULTURE GÉNÉRALE (animaux, nature, monde, sciences simples)",
+      observation: "uniquement de l'OBSERVATION (couleurs, formes, tailles, logique visuelle)",
+      lettres: "uniquement des LETTRES ET MOTS (première lettre, rimes, contraires, orthographe simple)",
+      melange: ""
+    };
+    const catLine = catMap[catKey] ? `CATÉGORIE IMPOSÉE : les questions doivent porter ${catMap[catKey]}.` : "";
+
+    const prompt = `Tu crées un mini-jeu du soir très court et TRÈS DOUX pour un enfant qui va se coucher.
+Enfant : ${player.name}, ${age} ans.
+${catLine || `TYPE DE JEU IMPOSÉ ce soir : "${forcedType}". Tu DOIS construire les ${questionsPerGame} questions autour de ce type précis, et pas un autre.`}
+${themeLine}
+${avoid.length && !catLine ? `Évite absolument ces types déjà vus récemment : ${avoid.join(" ; ")}.` : ""}
+IMPORTANT : invente des questions NOUVELLES et originales (graine de variété : ${seed}). Ne reprends pas des questions classiques toujours identiques. Varie les sujets concrets d'une question à l'autre, ne répète pas le même animal, objet ou la même couleur.
+Contraintes :
+- Exactement ${questionsPerGame} questions.
+- Niveau adapté à ${age} ans : ${niveau}.
+- Chaque question a 2 ou 3 réponses possibles maximum.
+- Rien d'effrayant, calme, positif.
+- Utilise un emoji illustratif différent pour chaque question.
+Réponds UNIQUEMENT avec du JSON valide, sans texte autour, sans backticks, au format :
+{"questions":[{"emoji":"🐶","question":"...","answers":["...","..."],"correct":0}]}
+"correct" est l'index (0, 1 ou 2) de la bonne réponse.`;
+
+    try {
+      const res = await fetch("/api/generate", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({
+          model:"claude-sonnet-4-6",
+          max_tokens:1000,
+          messages:[{ role:"user", content:prompt }]
+        })
+      });
+      const data = await res.json();
+      const text = data.content.filter(b=>b.type==="text").map(b=>b.text).join("");
+      let clean = text.replace(/```json/g,"").replace(/```/g,"").trim();
+      const a = clean.indexOf("{"), b = clean.lastIndexOf("}");
+      if (a !== -1 && b !== -1) clean = clean.slice(a, b+1);
+      const parsed = JSON.parse(clean);
+      const qs = parsed.questions.filter(q =>
+        q && q.question && Array.isArray(q.answers) && q.answers.length>=2 &&
+        typeof q.correct==="number" && q.correct < q.answers.length
+      ).slice(0,questionsPerGame);
+      if (qs.length >= 1) return qs;
+      throw new Error("format");
+    } catch(e) {
+      return fallbackGame(player);
+    }
+  }
+
+  // Jeux de secours (hors ligne) — quelques variantes, choisies au hasard
+  // Réservoir de questions hors ligne, organisé par CATÉGORIE puis par âge.
+  // On pioche au hasard dans la catégorie choisie pour chaque enfant.
+  const OFFLINE_POOL = {
+    calcul: {
+      petit: [
+        {emoji:"⭐",q:"Combien d'étoiles ? ⭐⭐",good:"2",bad:["4","5"]},
+        {emoji:"🎈",q:"Combien de ballons ? 🎈🎈🎈",good:"3",bad:["1","5"]},
+        {emoji:"🐟",q:"Combien de poissons ? 🐟",good:"1",bad:["3","2"]},
+        {emoji:"🍓",q:"Combien de fraises ? 🍓🍓🍓🍓",good:"4",bad:["2","3"]},
+        {emoji:"🌸",q:"Combien de fleurs ? 🌸🌸",good:"2",bad:["3","1"]},
+        {emoji:"🍎",q:"Combien de pommes ? 🍎🍎🍎",good:"3",bad:["2","4"]},
+        {emoji:"🐝",q:"Combien d'abeilles ? 🐝🐝🐝🐝🐝",good:"5",bad:["3","4"]},
+        {emoji:"➕",q:"Combien font 1 + 1 ?",good:"2",bad:["1","3"]},
+        {emoji:"➕",q:"Combien font 2 + 1 ?",good:"3",bad:["2","4"]},
+        {emoji:"➕",q:"Combien font 2 + 2 ?",good:"4",bad:["3","5"]},
+        {emoji:"🖐️",q:"Combien de doigts sur une main ?",good:"5",bad:["4","6"]},
+        {emoji:"🔢",q:"Quel nombre vient après 2 ?",good:"3",bad:["1","4"]},
+        {emoji:"🔢",q:"Quel nombre vient après 4 ?",good:"5",bad:["3","6"]},
+        {emoji:"🍪",q:"1 biscuit et encore 1 biscuit, ça fait ?",good:"2",bad:["3","1"]},
+        {emoji:"🐦",q:"Combien d'oiseaux ? 🐦🐦🐦🐦",good:"4",bad:["3","5"]},
+        {emoji:"🍬",q:"Combien de bonbons ? 🍬🍬",good:"2",bad:["4","1"]},
+        {emoji:"🌟",q:"Combien d'étoiles ? 🌟🌟🌟🌟🌟",good:"5",bad:["4","3"]},
+        {emoji:"➕",q:"Combien font 3 + 1 ?",good:"4",bad:["3","5"]},
+        {emoji:"➕",q:"Combien font 1 + 2 ?",good:"3",bad:["2","4"]},
+        {emoji:"➖",q:"Combien font 3 - 1 ?",good:"2",bad:["1","3"]},
+        {emoji:"➖",q:"Combien font 2 - 1 ?",good:"1",bad:["2","0"]},
+        {emoji:"🖐️",q:"J'ai 2 mains. Combien de mains en tout ?",good:"2",bad:["1","5"]},
+        {emoji:"🐾",q:"Combien de pattes a un chat ?",good:"4",bad:["2","3"]},
+        {emoji:"🔢",q:"Quel nombre vient après 3 ?",good:"4",bad:["2","5"]},
+        {emoji:"🔢",q:"Quel nombre vient avant 3 ?",good:"2",bad:["4","1"]},
+        {emoji:"🎂",q:"Sur le gâteau : 2 bougies et 1 encore ?",good:"3",bad:["2","4"]}
+      ],
+      grand: [
+        {emoji:"➕",q:"Combien font 3 + 2 ?",good:"5",bad:["4","6"]},
+        {emoji:"➕",q:"Combien font 4 + 4 ?",good:"8",bad:["6","9"]},
+        {emoji:"➕",q:"Combien font 5 + 5 ?",good:"10",bad:["8","11"]},
+        {emoji:"➕",q:"Combien font 6 + 3 ?",good:"9",bad:["7","10"]},
+        {emoji:"➕",q:"Combien font 7 + 2 ?",good:"9",bad:["8","10"]},
+        {emoji:"➕",q:"Combien font 8 + 4 ?",good:"12",bad:["11","13"]},
+        {emoji:"➖",q:"Combien font 7 - 2 ?",good:"5",bad:["4","6"]},
+        {emoji:"➖",q:"Combien font 10 - 4 ?",good:"6",bad:["5","7"]},
+        {emoji:"➖",q:"Combien font 9 - 3 ?",good:"6",bad:["5","7"]},
+        {emoji:"➖",q:"Combien font 12 - 5 ?",good:"7",bad:["6","8"]},
+        {emoji:"✖️",q:"Combien font 2 × 3 ?",good:"6",bad:["5","8"]},
+        {emoji:"✖️",q:"Combien font 5 × 2 ?",good:"10",bad:["7","12"]},
+        {emoji:"🔢",q:"Quel nombre vient après 9 ?",good:"10",bad:["8","11"]},
+        {emoji:"🔢",q:"Quel nombre vient avant 5 ?",good:"4",bad:["6","3"]},
+        {emoji:"🔢",q:"Quel est le double de 4 ?",good:"8",bad:["6","10"]},
+        {emoji:"🍰",q:"La moitié de 10, c'est ?",good:"5",bad:["4","6"]},
+        {emoji:"➕",q:"Combien font 7 + 5 ?",good:"12",bad:["11","13"]},
+        {emoji:"➕",q:"Combien font 9 + 6 ?",good:"15",bad:["14","16"]},
+        {emoji:"➕",q:"Combien font 8 + 8 ?",good:"16",bad:["15","18"]},
+        {emoji:"➖",q:"Combien font 15 - 6 ?",good:"9",bad:["8","10"]},
+        {emoji:"➖",q:"Combien font 20 - 7 ?",good:"13",bad:["12","14"]},
+        {emoji:"➖",q:"Combien font 14 - 9 ?",good:"5",bad:["6","4"]},
+        {emoji:"✖️",q:"Combien font 3 × 3 ?",good:"9",bad:["6","12"]},
+        {emoji:"✖️",q:"Combien font 4 × 2 ?",good:"8",bad:["6","10"]},
+        {emoji:"✖️",q:"Combien font 2 × 5 ?",good:"10",bad:["8","12"]},
+        {emoji:"🔟",q:"Combien font 10 + 10 ?",good:"20",bad:["15","30"]},
+        {emoji:"🔢",q:"Quel est le double de 6 ?",good:"12",bad:["10","14"]},
+        {emoji:"🔢",q:"Quel est le double de 5 ?",good:"10",bad:["8","12"]},
+        {emoji:"🍕",q:"La moitié de 8, c'est ?",good:"4",bad:["3","5"]},
+        {emoji:"🍕",q:"La moitié de 6, c'est ?",good:"3",bad:["2","4"]},
+        {emoji:"🔢",q:"Combien font 12 + 3 ?",good:"15",bad:["14","16"]}
+      ]
+    },
+    culture: {
+      petit: [
+        {emoji:"🐄",q:"Que dit la vache ?",good:"Meuh",bad:["Ouaf","Miaou"]},
+        {emoji:"🐱",q:"Que dit le chat ?",good:"Miaou",bad:["Coin","Meuh"]},
+        {emoji:"🐶",q:"Que dit le chien ?",good:"Ouaf",bad:["Cui-cui","Meuh"]},
+        {emoji:"🐝",q:"Qui fait du miel ?",good:"L'abeille",bad:["Le chat","Le poisson"]},
+        {emoji:"🥕",q:"Qui adore les carottes ?",good:"Le lapin",bad:["Le poisson","Le lion"]},
+        {emoji:"🐧",q:"Où vit le pingouin ?",good:"Dans le froid",bad:["Dans le désert","Dans le feu"]},
+        {emoji:"🐘",q:"L'éléphant est plutôt…",good:"Grand",bad:["Petit","Minuscule"]},
+        {emoji:"🌙",q:"La nuit, dans le ciel, on voit la…",good:"Lune",bad:["Soupe","Chaise"]},
+        {emoji:"☀️",q:"Le jour, dans le ciel, il y a le…",good:"Soleil",bad:["Bateau","Fromage"]},
+        {emoji:"🐦",q:"Qui peut voler ?",good:"L'oiseau",bad:["Le poisson","Le chien"]},
+        {emoji:"🐟",q:"Où vit le poisson ?",good:"Dans l'eau",bad:["Dans l'arbre","Dans le lit"]},
+        {emoji:"🍌",q:"Quel fruit adore le singe ?",good:"La banane",bad:["La patate","Le pain"]},
+        {emoji:"🐮",q:"Quel animal nous donne du lait ?",good:"La vache",bad:["Le chat","La poule"]},
+        {emoji:"🐔",q:"Quel animal pond des œufs ?",good:"La poule",bad:["Le chien","Le lapin"]},
+        {emoji:"🐷",q:"Que dit le cochon ?",good:"Groin",bad:["Miaou","Coa"]},
+        {emoji:"🦁",q:"Que fait le lion ?",good:"Il rugit",bad:["Il miaule","Il coasse"]},
+        {emoji:"🐘",q:"Quel animal a une trompe ?",good:"L'éléphant",bad:["Le lapin","Le chat"]},
+        {emoji:"🐢",q:"Quel animal porte sa maison ?",good:"La tortue",bad:["Le chien","Le cheval"]},
+        {emoji:"🌳",q:"Où vit l'écureuil ?",good:"Dans les arbres",bad:["Dans la mer","Sous terre"]},
+        {emoji:"❄️",q:"Quand fait-il froid et neige ?",good:"En hiver",bad:["En été","Au printemps"]},
+        {emoji:"🌧️",q:"Qu'est-ce qui tombe du ciel quand il pleut ?",good:"De l'eau",bad:["Du sable","Du lait"]},
+        {emoji:"🐛",q:"Que devient la chenille ?",good:"Un papillon",bad:["Un poisson","Une souris"]},
+        {emoji:"🦆",q:"Où nage le canard ?",good:"Sur l'eau",bad:["Dans le feu","Dans le sable"]}
+      ],
+      grand: [
+        {emoji:"🐘",q:"Quel est le plus grand animal terrestre ?",good:"L'éléphant",bad:["La souris","Le chat"]},
+        {emoji:"🦒",q:"Quel animal a un très long cou ?",good:"La girafe",bad:["Le lapin","Le canard"]},
+        {emoji:"🦁",q:"Qui est le roi des animaux ?",good:"Le lion",bad:["Le mouton","La poule"]},
+        {emoji:"🐢",q:"Quel animal est très lent ?",good:"La tortue",bad:["Le guépard","Le lièvre"]},
+        {emoji:"🌍",q:"Sur quelle planète vivons-nous ?",good:"La Terre",bad:["Mars","La Lune"]},
+        {emoji:"🌞",q:"Quel astre nous éclaire le jour ?",good:"Le Soleil",bad:["La Lune","Une étoile filante"]},
+        {emoji:"🦋",q:"Que devient la chenille ?",good:"Un papillon",bad:["Un oiseau","Un poisson"]},
+        {emoji:"🐸",q:"Où vit la grenouille ?",good:"Près de l'eau",bad:["Dans le désert","Sur la lune"]},
+        {emoji:"🐪",q:"Quel animal vit dans le désert ?",good:"Le chameau",bad:["Le pingouin","Le dauphin"]},
+        {emoji:"🐬",q:"Quel animal vit dans la mer ?",good:"Le dauphin",bad:["Le lion","La vache"]},
+        {emoji:"🦉",q:"Quel oiseau vit la nuit ?",good:"La chouette",bad:["La poule","Le canard"]},
+        {emoji:"🍯",q:"Qui fabrique le miel ?",good:"L'abeille",bad:["La fourmi","L'araignée"]},
+        {emoji:"🕷️",q:"Combien de pattes a une araignée ?",good:"8",bad:["6","4"]},
+        {emoji:"🌈",q:"Combien de couleurs dans l'arc-en-ciel ?",good:"7",bad:["5","10"]},
+        {emoji:"🐔",q:"Quel animal pond les œufs qu'on mange ?",good:"La poule",bad:["La vache","Le mouton"]},
+        {emoji:"🌊",q:"L'eau de la mer a quel goût ?",good:"Salé",bad:["Sucré","Piquant"]},
+        {emoji:"🐝",q:"Que fabrique l'abeille ?",good:"Du miel",bad:["Du lait","Du pain"]},
+        {emoji:"🕸️",q:"Qui tisse une toile ?",good:"L'araignée",bad:["La fourmi","L'abeille"]},
+        {emoji:"🦇",q:"Quel animal dort la tête en bas ?",good:"La chauve-souris",bad:["Le chat","Le lapin"]},
+        {emoji:"🐫",q:"Combien de bosses a un dromadaire ?",good:"1",bad:["2","3"]},
+        {emoji:"🦈",q:"Où vit le requin ?",good:"Dans la mer",bad:["Dans le désert","Dans la forêt"]},
+        {emoji:"🌍",q:"Comment s'appelle notre planète ?",good:"La Terre",bad:["Mars","Vénus"]},
+        {emoji:"🌕",q:"Quel astre voit-on la nuit ?",good:"La Lune",bad:["Le Soleil","L'arc-en-ciel"]},
+        {emoji:"🍂",q:"En quelle saison les feuilles tombent ?",good:"L'automne",bad:["L'été","L'hiver"]},
+        {emoji:"🌷",q:"En quelle saison poussent les fleurs ?",good:"Le printemps",bad:["L'hiver","L'automne"]},
+        {emoji:"🐧",q:"Quel oiseau ne vole pas mais nage ?",good:"Le pingouin",bad:["L'aigle","Le moineau"]},
+        {emoji:"🦉",q:"Quel oiseau chasse la nuit ?",good:"La chouette",bad:["Le canard","La poule"]},
+        {emoji:"🐒",q:"Quel animal adore grimper aux arbres ?",good:"Le singe",bad:["Le poisson","La tortue"]},
+        {emoji:"🌡️",q:"L'eau devient quoi quand il gèle très fort ?",good:"De la glace",bad:["Du sable","De la fumée"]},
+        {emoji:"🐄",q:"D'où vient le lait ?",good:"De la vache",bad:["De la poule","Du mouton"]},
+        {emoji:"🦋",q:"Combien d'ailes a un papillon ?",good:"4",bad:["2","6"]}
+      ]
+    },
+    observation: {
+      petit: [
+        {emoji:"🍎",q:"De quelle couleur est la pomme ?",good:"Rouge",bad:["Bleu","Violet"]},
+        {emoji:"🍌",q:"De quelle couleur est la banane ?",good:"Jaune",bad:["Rouge","Vert"]},
+        {emoji:"🌿",q:"De quelle couleur est l'herbe ?",good:"Vert",bad:["Rose","Bleu"]},
+        {emoji:"🌊",q:"De quelle couleur est la mer ?",good:"Bleu",bad:["Rouge","Marron"]},
+        {emoji:"🍅",q:"De quelle couleur est la tomate ?",good:"Rouge",bad:["Bleu","Noir"]},
+        {emoji:"🌻",q:"De quelle couleur est le tournesol ?",good:"Jaune",bad:["Violet","Gris"]},
+        {emoji:"🔵",q:"Quelle est cette forme ? 🔵",good:"Un rond",bad:["Un carré","Un triangle"]},
+        {emoji:"🔺",q:"Quelle est cette forme ? 🔺",good:"Un triangle",bad:["Un rond","Un carré"]},
+        {emoji:"🟦",q:"Quelle est cette forme ? 🟦",good:"Un carré",bad:["Un rond","Une étoile"]},
+        {emoji:"❄️",q:"La neige, c'est…",good:"Froid",bad:["Chaud","Piquant"]},
+        {emoji:"🔥",q:"Le feu, c'est…",good:"Chaud",bad:["Froid","Mouillé"]},
+        {emoji:"🐘",q:"L'éléphant est plutôt…",good:"Grand",bad:["Petit","Minuscule"]},
+        {emoji:"🐭",q:"La souris est plutôt…",good:"Petite",bad:["Grande","Énorme"]},
+        {emoji:"🎨",q:"Rouge et jaune mélangés donnent…",good:"Orange",bad:["Vert","Violet"]},
+        {emoji:"🍇",q:"De quelle couleur est le raisin ?",good:"Violet",bad:["Orange","Blanc"]},
+        {emoji:"🥕",q:"De quelle couleur est la carotte ?",good:"Orange",bad:["Bleu","Vert"]},
+        {emoji:"🌸",q:"De quelle couleur est cette fleur ? 🌸",good:"Rose",bad:["Noir","Marron"]},
+        {emoji:"⚫",q:"Quelle est cette forme ? ⚫",good:"Un rond",bad:["Un carré","Un triangle"]},
+        {emoji:"⭐",q:"Quelle est cette forme ? ⭐",good:"Une étoile",bad:["Un rond","Un cœur"]},
+        {emoji:"❤️",q:"Quelle est cette forme ? ❤️",good:"Un cœur",bad:["Une étoile","Un carré"]},
+        {emoji:"🐘",q:"L'éléphant est plutôt…",good:"Grand",bad:["Petit","Minuscule"]},
+        {emoji:"🐜",q:"La fourmi est plutôt…",good:"Petite",bad:["Grande","Énorme"]},
+        {emoji:"☀️",q:"Le soleil, c'est plutôt…",good:"Chaud",bad:["Froid","Mouillé"]},
+        {emoji:"🧊",q:"Le glaçon, c'est plutôt…",good:"Froid",bad:["Chaud","Sec"]},
+        {emoji:"🌙",q:"La lune, on la voit plutôt…",good:"La nuit",bad:["Le matin","À midi"]}
+      ],
+      grand: [
+        {emoji:"🎨",q:"Bleu et jaune mélangés donnent…",good:"Vert",bad:["Orange","Violet"]},
+        {emoji:"🎨",q:"Rouge et bleu mélangés donnent…",good:"Violet",bad:["Vert","Marron"]},
+        {emoji:"🔷",q:"Combien de côtés a un carré ?",good:"4",bad:["3","5"]},
+        {emoji:"🔺",q:"Combien de côtés a un triangle ?",good:"3",bad:["4","2"]},
+        {emoji:"⬡",q:"Combien de côtés a un hexagone ?",good:"6",bad:["5","8"]},
+        {emoji:"🌈",q:"Quelle couleur n'est PAS dans l'arc-en-ciel ?",good:"Le marron",bad:["Le rouge","Le bleu"]},
+        {emoji:"⭐",q:"Combien de pointes a une étoile ? ⭐",good:"5",bad:["4","6"]},
+        {emoji:"🕐",q:"Combien d'heures dans une journée ?",good:"24",bad:["12","10"]},
+        {emoji:"📅",q:"Combien de jours dans une semaine ?",good:"7",bad:["5","10"]},
+        {emoji:"🗓️",q:"Combien de mois dans une année ?",good:"12",bad:["10","7"]},
+        {emoji:"🖐️",q:"Combien de doigts sur deux mains ?",good:"10",bad:["8","12"]},
+        {emoji:"🚗",q:"Combien de roues a une voiture ?",good:"4",bad:["2","6"]},
+        {emoji:"🚲",q:"Combien de roues a un vélo ?",good:"2",bad:["3","4"]},
+        {emoji:"🐞",q:"De quelle couleur est la coccinelle ?",good:"Rouge",bad:["Bleue","Verte"]},
+        {emoji:"🎨",q:"Rouge et blanc mélangés donnent…",good:"Rose",bad:["Vert","Marron"]},
+        {emoji:"🎨",q:"Jaune et rouge mélangés donnent…",good:"Orange",bad:["Violet","Bleu"]},
+        {emoji:"⭐",q:"Combien de pointes a cette étoile ? ⭐",good:"5",bad:["4","6"]},
+        {emoji:"🔶",q:"Combien de côtés a un losange ?",good:"4",bad:["3","5"]},
+        {emoji:"➖",q:"Combien de côtés a un cercle ?",good:"0",bad:["1","4"]},
+        {emoji:"🕒",q:"Combien de minutes dans une heure ?",good:"60",bad:["30","100"]},
+        {emoji:"📅",q:"Combien de saisons dans une année ?",good:"4",bad:["2","6"]},
+        {emoji:"🌗",q:"Combien de jours dans une semaine ?",good:"7",bad:["5","10"]},
+        {emoji:"🦶",q:"Combien d'orteils sur un pied ?",good:"5",bad:["4","6"]},
+        {emoji:"🚚",q:"Combien de roues a un camion (souvent) ?",good:"6",bad:["2","3"]},
+        {emoji:"🐙",q:"Combien de bras a une pieuvre ?",good:"8",bad:["6","4"]},
+        {emoji:"🌈",q:"Quelle couleur est en haut de l'arc-en-ciel ?",good:"Le rouge",bad:["Le violet","Le vert"]},
+        {emoji:"⚖️",q:"Un éléphant est plus lourd qu'une…",good:"Souris",bad:["Baleine","Voiture"]}
+      ]
+    },
+    lettres: {
+      petit: [
+        {emoji:"🍎",q:"Par quelle lettre commence POMME ?",good:"P",bad:["B","M"]},
+        {emoji:"🐱",q:"Par quelle lettre commence CHAT ?",good:"C",bad:["S","T"]},
+        {emoji:"🐶",q:"Par quelle lettre commence CHIEN ?",good:"C",bad:["K","D"]},
+        {emoji:"☀️",q:"Par quelle lettre commence SOLEIL ?",good:"S",bad:["C","O"]},
+        {emoji:"🌙",q:"Par quelle lettre commence LUNE ?",good:"L",bad:["N","U"]},
+        {emoji:"🐟",q:"Par quelle lettre commence POISSON ?",good:"P",bad:["B","F"]},
+        {emoji:"🔤",q:"Quelle lettre vient après A ?",good:"B",bad:["C","Z"]},
+        {emoji:"🔤",q:"Quelle lettre vient après B ?",good:"C",bad:["A","D"]},
+        {emoji:"🍌",q:"Par quelle lettre commence BANANE ?",good:"B",bad:["P","D"]},
+        {emoji:"🐘",q:"Par quelle lettre commence ÉLÉPHANT ?",good:"E",bad:["A","L"]},
+        {emoji:"🚗",q:"Par quelle lettre commence VOITURE ?",good:"V",bad:["F","W"]},
+        {emoji:"🎈",q:"Par quelle lettre commence BALLON ?",good:"B",bad:["P","V"]},
+        {emoji:"🌙",q:"Par quelle lettre commence NUAGE ?",good:"N",bad:["M","U"]},
+        {emoji:"🐭",q:"Par quelle lettre commence SOURIS ?",good:"S",bad:["C","Z"]},
+        {emoji:"🍰",q:"Par quelle lettre commence GÂTEAU ?",good:"G",bad:["J","C"]},
+        {emoji:"🐍",q:"Par quelle lettre commence SERPENT ?",good:"S",bad:["C","Z"]},
+        {emoji:"🦆",q:"Par quelle lettre commence CANARD ?",good:"C",bad:["K","G"]},
+        {emoji:"🔤",q:"Quelle lettre vient après C ?",good:"D",bad:["B","E"]},
+        {emoji:"🔤",q:"Quelle lettre vient après D ?",good:"E",bad:["C","F"]},
+        {emoji:"🔤",q:"Quelle lettre commence l'alphabet ?",good:"A",bad:["B","Z"]},
+        {emoji:"🌞",q:"Par quelle lettre commence SOLEIL ?",good:"S",bad:["O","C"]},
+        {emoji:"🐟",q:"Par quelle lettre commence POISSON ?",good:"P",bad:["B","F"]},
+        {emoji:"🌸",q:"Par quelle lettre commence FLEUR ?",good:"F",bad:["V","P"]}
+      ],
+      grand: [
+        {emoji:"🔤",q:"Combien de lettres dans CHAT ?",good:"4",bad:["3","5"]},
+        {emoji:"🔤",q:"Combien de lettres dans MAISON ?",good:"6",bad:["5","7"]},
+        {emoji:"🔤",q:"Combien de voyelles dans BATEAU ? (a,e,i,o,u)",good:"3",bad:["2","4"]},
+        {emoji:"🐘",q:"Quel mot est bien écrit ?",good:"Éléphant",bad:["Élefant","Éléphan"]},
+        {emoji:"🍎",q:"Quel mot est bien écrit ?",good:"Pomme",bad:["Pome","Pommme"]},
+        {emoji:"📖",q:"Le contraire de GRAND, c'est…",good:"Petit",bad:["Gros","Long"]},
+        {emoji:"📖",q:"Le contraire de CHAUD, c'est…",good:"Froid",bad:["Tiède","Doux"]},
+        {emoji:"📖",q:"Le contraire de JOUR, c'est…",good:"Nuit",bad:["Soir","Midi"]},
+        {emoji:"📖",q:"Le contraire de HAUT, c'est…",good:"Bas",bad:["Loin","Grand"]},
+        {emoji:"🔡",q:"Quelle lettre vient après M ?",good:"N",bad:["L","O"]},
+        {emoji:"🎵",q:"Qu'est-ce qui rime avec CHAT ?",good:"Rat",bad:["Chien","Lit"]},
+        {emoji:"🎵",q:"Qu'est-ce qui rime avec LUNE ?",good:"Prune",bad:["Étoile","Nuit"]},
+        {emoji:"🔤",q:"Combien de lettres dans SOLEIL ?",good:"6",bad:["5","7"]},
+        {emoji:"📖",q:"Le pluriel de CHEVAL, c'est…",good:"Chevaux",bad:["Chevals","Cheveaux"]},
+        {emoji:"📖",q:"Le contraire de RAPIDE, c'est…",good:"Lent",bad:["Vite","Fort"]},
+        {emoji:"📖",q:"Le contraire de PLEIN, c'est…",good:"Vide",bad:["Gros","Lourd"]},
+        {emoji:"📖",q:"Le contraire de OUVERT, c'est…",good:"Fermé",bad:["Grand","Cassé"]},
+        {emoji:"📖",q:"Le contraire de PROPRE, c'est…",good:"Sale",bad:["Neuf","Beau"]},
+        {emoji:"🔤",q:"Combien de lettres dans SOLEIL ?",good:"6",bad:["5","7"]},
+        {emoji:"🔤",q:"Combien de lettres dans LUNE ?",good:"4",bad:["3","5"]},
+        {emoji:"🔤",q:"Combien de voyelles dans MAISON ? (a,e,i,o,u)",good:"3",bad:["2","4"]},
+        {emoji:"🎵",q:"Qu'est-ce qui rime avec BALLON ?",good:"Mouton",bad:["Chat","Vélo"]},
+        {emoji:"🎵",q:"Qu'est-ce qui rime avec SOURIS ?",good:"Tapis",bad:["Chien","Loup"]},
+        {emoji:"🎵",q:"Qu'est-ce qui rime avec ÉTOILE ?",good:"Voile",bad:["Lune","Nuage"]},
+        {emoji:"🐘",q:"Quel mot est bien écrit ?",good:"Éléphant",bad:["Élefant","Éléfan"]},
+        {emoji:"🍊",q:"Quel mot est bien écrit ?",good:"Orange",bad:["Oronge","Orenge"]},
+        {emoji:"🔡",q:"Quelle lettre vient après S ?",good:"T",bad:["R","U"]}
+      ]
+    }
+  };
+
+  // Catégorie "mélangé" : on rassemble tout
+  OFFLINE_POOL.melange = {
+    petit: [].concat(OFFLINE_POOL.calcul.petit, OFFLINE_POOL.culture.petit, OFFLINE_POOL.observation.petit, OFFLINE_POOL.lettres.petit),
+    grand: [].concat(OFFLINE_POOL.calcul.grand, OFFLINE_POOL.culture.grand, OFFLINE_POOL.observation.grand, OFFLINE_POOL.lettres.grand)
+  };
+
+  // Mémoire des questions récemment posées (par enfant), pour éviter les répétitions
+  const recentQuestions = {};
+
+  function shuffle(arr){ return arr.map(v=>[Math.random(),v]).sort((a,b)=>a[0]-b[0]).map(p=>p[1]); }
+
+  // Banques de questions par THÈME (hors ligne), par âge.
+  // La clé correspond au texte du thème saisi (voir mapThemeKey).
+  const THEME_POOL = {
+    foot: {
+      petit: [
+        {emoji:"⚽",q:"Avec quoi joue-t-on au foot ?",good:"Un ballon",bad:["Une raquette","Un vélo"]},
+        {emoji:"🥅",q:"Où faut-il mettre le ballon ?",good:"Dans le but",bad:["Dans l'arbre","Sous le lit"]},
+        {emoji:"👟",q:"Avec quoi tape-t-on dans le ballon ?",good:"Le pied",bad:["La main","Le nez"]},
+        {emoji:"⚽",q:"Combien de ballons ? ⚽⚽⚽",good:"3",bad:["2","4"]},
+        {emoji:"🧤",q:"Qui garde les buts ?",good:"Le gardien",bad:["Le boulanger","Le facteur"]},
+        {emoji:"🟩",q:"De quelle couleur est le terrain ?",good:"Vert",bad:["Rouge","Violet"]},
+        {emoji:"👕",q:"Les joueurs d'une équipe portent le même…",good:"Maillot",bad:["Chapeau","Pyjama"]},
+        {emoji:"🙌",q:"Que crie-t-on quand on marque ?",good:"But !",bad:["Miam !","Dodo !"]},
+        {emoji:"⚽",q:"Combien de ballons ? ⚽⚽",good:"2",bad:["1","3"]},
+        {emoji:"🦶",q:"On a le droit de toucher le ballon avec les mains ?",good:"Non",bad:["Oui","Parfois"]}
+      ],
+      grand: [
+        {emoji:"⚽",q:"Combien de joueurs par équipe sur le terrain ?",good:"11",bad:["9","7"]},
+        {emoji:"🧤",q:"Quel joueur peut prendre le ballon à la main ?",good:"Le gardien",bad:["L'attaquant","Le défenseur"]},
+        {emoji:"🟨",q:"Que montre l'arbitre pour un avertissement ?",good:"Un carton jaune",bad:["Un carton bleu","Un drapeau"]},
+        {emoji:"🟥",q:"Quel carton exclut un joueur ?",good:"Le rouge",bad:["Le jaune","Le vert"]},
+        {emoji:"🏆",q:"Comment s'appelle la grande coupe entre pays ?",good:"La Coupe du monde",bad:["Le Tour de France","Roland-Garros"]},
+        {emoji:"⏱️",q:"Combien de minutes dure une mi-temps ?",good:"45",bad:["30","60"]},
+        {emoji:"🥅",q:"Marquer dans le but adverse, c'est marquer un…",good:"But",bad:["Panier","Essai"]},
+        {emoji:"👟",q:"Un coup de pied arrêté après une faute, c'est un…",good:"Coup franc",bad:["Corner de main","Touche de tête"]},
+        {emoji:"🚩",q:"Quand le ballon sort sur le côté, on fait une…",good:"Touche",bad:["Mêlée","Passe décisive"]},
+        {emoji:"🇧🇪",q:"Comment s'appelle l'équipe de Belgique ?",good:"Les Diables Rouges",bad:["Les Bleus","La Roja"]},
+        {emoji:"⚽",q:"Combien de buts si on en marque 2 puis encore 1 ?",good:"3",bad:["2","4"]},
+        {emoji:"🏟️",q:"Où se joue un match de foot ?",good:"Dans un stade",bad:["Dans une piscine","Sur une patinoire"]}
+      ]
+    },
+    superheros: {
+      petit: [
+        {emoji:"🦸",q:"Que porte souvent un super-héros dans le dos ?",good:"Une cape",bad:["Un sac d'école","Une casserole"]},
+        {emoji:"💪",q:"Un super-héros est très…",good:"Fort",bad:["Fatigué","Petit"]},
+        {emoji:"🦸",q:"Que fait un super-héros ?",good:"Il aide les gens",bad:["Il dort tout le jour","Il boude"]},
+        {emoji:"🕸️",q:"Quel héros lance des toiles ?",good:"Spider-Man",bad:["Le facteur","Le boulanger"]},
+        {emoji:"🦇",q:"Quel héros a une cape de chauve-souris ?",good:"Batman",bad:["Le clown","Le pirate"]},
+        {emoji:"⚡",q:"Un héros très rapide court comme…",good:"L'éclair",bad:["Un escargot","Une tortue"]},
+        {emoji:"🛡️",q:"Avec quoi se protège un héros ?",good:"Un bouclier",bad:["Un oreiller","Un parapluie"]},
+        {emoji:"🦸",q:"Un super-héros est-il gentil ou méchant ?",good:"Gentil",bad:["Méchant","Paresseux"]},
+        {emoji:"🎭",q:"Que met un héros sur son visage pour se cacher ?",good:"Un masque",bad:["De la confiture","Un chapeau melon"]},
+        {emoji:"✨",q:"Les pouvoirs magiques, ça s'appelle des…",good:"Super-pouvoirs",bad:["Super-soupes","Super-chaussettes"]}
+      ],
+      grand: [
+        {emoji:"🕸️",q:"Quel est le vrai prénom de Spider-Man ?",good:"Peter",bad:["Bruce","Clark"]},
+        {emoji:"🦇",q:"Dans quelle ville vit Batman ?",good:"Gotham",bad:["Paris","Metropolis"]},
+        {emoji:"🛡️",q:"Quel héros a un bouclier étoilé ?",good:"Captain America",bad:["Hulk","Thor"]},
+        {emoji:"💚",q:"Quel héros devient vert quand il est en colère ?",good:"Hulk",bad:["Iron Man","Flash"]},
+        {emoji:"🔨",q:"Quel héros a un marteau magique ?",good:"Thor",bad:["Spider-Man","Batman"]},
+        {emoji:"⚡",q:"Quel héros court super vite ?",good:"Flash",bad:["Aquaman","Hulk"]},
+        {emoji:"🤖",q:"Quel héros porte une armure high-tech ?",good:"Iron Man",bad:["Tarzan","Robin des Bois"]},
+        {emoji:"👑",q:"Quelle héroïne est une princesse guerrière ?",good:"Wonder Woman",bad:["Cendrillon","Blanche-Neige"]},
+        {emoji:"🌊",q:"Quel héros parle aux poissons ?",good:"Aquaman",bad:["Batman","Thor"]},
+        {emoji:"🦸",q:"Un groupe de super-héros s'appelle une…",good:"Équipe",bad:["Assiette","Récréation"]},
+        {emoji:"🎬",q:"On voit souvent les super-héros dans des…",good:"Films",bad:["Casseroles","Chaussettes"]},
+        {emoji:"🦹",q:"L'ennemi d'un super-héros s'appelle le…",good:"Super-vilain",bad:["Super-copain","Super-cousin"]}
+      ]
+    },
+    princesses: {
+      petit: [
+        {emoji:"👑",q:"Que porte une princesse sur la tête ?",good:"Une couronne",bad:["Une casquette","Une casserole"]},
+        {emoji:"👗",q:"Une princesse porte souvent une belle…",good:"Robe",bad:["Salopette","Combinaison de ski"]},
+        {emoji:"🏰",q:"Où habite une princesse ?",good:"Un château",bad:["Une niche","Un garage"]},
+        {emoji:"🐸",q:"Dans les contes, la princesse embrasse un crapaud qui devient un…",good:"Prince",bad:["Poisson","Caillou"]},
+        {emoji:"👠",q:"Quelle princesse perd sa chaussure au bal ?",good:"Cendrillon",bad:["Raiponce","Ariel"]},
+        {emoji:"💇",q:"Quelle princesse a de très très longs cheveux ?",good:"Raiponce",bad:["Cendrillon","Blanche-Neige"]},
+        {emoji:"🍎",q:"Quelle princesse croque une pomme et s'endort ?",good:"Blanche-Neige",bad:["Ariel","Jasmine"]},
+        {emoji:"🧜",q:"Quelle princesse est une sirène ?",good:"Ariel",bad:["Cendrillon","Aurore"]},
+        {emoji:"✨",q:"Qui aide la princesse avec de la magie ?",good:"La fée",bad:["Le plombier","Le boulanger"]},
+        {emoji:"👑",q:"Le papa d'une princesse est un…",good:"Roi",bad:["Pompier","Facteur"]}
+      ],
+      grand: [
+        {emoji:"👠",q:"Que perd Cendrillon en quittant le bal ?",good:"Sa pantoufle",bad:["Sa couronne","Son manteau"]},
+        {emoji:"💇",q:"Grâce à quoi grimpe-t-on dans la tour de Raiponce ?",good:"Ses cheveux",bad:["Une échelle","Un ascenseur"]},
+        {emoji:"🦁",q:"Quelle princesse a un tigre comme ami ?",good:"Jasmine",bad:["Ariel","Cendrillon"]},
+        {emoji:"❄️",q:"Quelle reine a des pouvoirs de glace ?",good:"Elsa",bad:["Ariel","Aurore"]},
+        {emoji:"⛄",q:"Comment s'appelle le bonhomme de neige d'Elsa et Anna ?",good:"Olaf",bad:["Sven","Pluto"]},
+        {emoji:"🌹",q:"Quelle princesse aime une Bête dans un château ?",good:"Belle",bad:["Ariel","Jasmine"]},
+        {emoji:"🍎",q:"Combien de nains aident Blanche-Neige ?",good:"7",bad:["5","3"]},
+        {emoji:"🧜",q:"Comment s'appelle le père d'Ariel ?",good:"Triton",bad:["Zeus","Hadès"]},
+        {emoji:"🏰",q:"Une princesse qui dort 100 ans, c'est la Belle au bois…",good:"Dormant",bad:["Courant","Chantant"]},
+        {emoji:"👑",q:"La femme du roi s'appelle la…",good:"Reine",bad:["Fermière","Sorcière"]},
+        {emoji:"🐭",q:"Qui aide Cendrillon à coudre sa robe ?",good:"Les souris",bad:["Les crocodiles","Les serpents"]},
+        {emoji:"🎈",q:"Dans quel pays se passe Aladdin (Jasmine) ?",good:"Un pays lointain",bad:["Au pôle Nord","Sous la mer"]}
+      ]
+    },
+    dinosaures: {
+      petit: [
+        {emoji:"🦕",q:"Le dinosaure au très long cou s'appelle le…",good:"Diplodocus",bad:["Chat","Lapin"]},
+        {emoji:"🦖",q:"Quel grand dinosaure a de toutes petites pattes avant ?",good:"Le T-rex",bad:["La poule","La souris"]},
+        {emoji:"🥚",q:"Comment naissent les bébés dinosaures ?",good:"Dans un œuf",bad:["Dans un nuage","Dans l'eau"]},
+        {emoji:"🌿",q:"Que mange le diplodocus ?",good:"Des plantes",bad:["Des bonbons","Des frites"]},
+        {emoji:"🦕",q:"Combien de dinosaures ? 🦕🦕",good:"2",bad:["3","1"]},
+        {emoji:"🦖",q:"Le dinosaure vivait il y a très très…",good:"Longtemps",bad:["Hier","Ce matin"]},
+        {emoji:"🦴",q:"Que retrouve-t-on des dinosaures aujourd'hui ?",good:"Des os",bad:["Des chaussures","Des téléphones"]},
+        {emoji:"🦕",q:"Le dinosaure est-il un animal ?",good:"Oui",bad:["Non","Un peu"]},
+        {emoji:"🌋",q:"Quel dinosaure a des plaques sur le dos ?",good:"Le stégosaure",bad:["Le poisson rouge","Le hamster"]},
+        {emoji:"🦖",q:"Le T-rex avait de grandes et solides…",good:"Dents",bad:["Lunettes","Moustaches"]}
+      ],
+      grand: [
+        {emoji:"🦖",q:"Que veut dire « T-rex » (Tyrannosaurus rex) ?",good:"Roi des tyrans",bad:["Petit lézard","Gentil géant"]},
+        {emoji:"🛡️",q:"Quel dinosaure a trois cornes sur la tête ?",good:"Le tricératops",bad:["Le T-rex","Le diplodocus"]},
+        {emoji:"🦕",q:"Un dinosaure qui mange des plantes est…",good:"Herbivore",bad:["Carnivore","Mécanique"]},
+        {emoji:"🍖",q:"Un dinosaure qui mange de la viande est…",good:"Carnivore",bad:["Herbivore","Végétarien"]},
+        {emoji:"🪽",q:"Quel dinosaure volant planait dans le ciel ?",good:"Le ptérodactyle",bad:["Le stégosaure","Le tricératops"]},
+        {emoji:"🦴",q:"Le scientifique qui étudie les dinosaures est un…",good:"Paléontologue",bad:["Vétérinaire","Astronaute"]},
+        {emoji:"🌋",q:"Quel dinosaure a des plaques osseuses sur le dos ?",good:"Le stégosaure",bad:["Le T-rex","Le vélociraptor"]},
+        {emoji:"🏃",q:"Quel petit dinosaure chassait en groupe et courait vite ?",good:"Le vélociraptor",bad:["Le diplodocus","Le brachiosaure"]},
+        {emoji:"🥚",q:"Les dinosaures pondaient des…",good:"Œufs",bad:["Cailloux","Bonbons"]},
+        {emoji:"☄️",q:"Qu'est-ce qui aurait causé leur disparition ?",good:"Une météorite",bad:["La pluie","Le vent"]},
+        {emoji:"📏",q:"Le diplodocus était surtout très…",good:"Long",bad:["Rond","Minuscule"]},
+        {emoji:"🦕",q:"Les dinosaures vivaient-ils en même temps que les humains ?",good:"Non",bad:["Oui","Le week-end"]}
+      ]
+    },
+    disney: {
+      petit: [
+        {emoji:"🐭",q:"Comment s'appelle la célèbre souris de Disney ?",good:"Mickey",bad:["Rémi","Tom"]},
+        {emoji:"🦆",q:"Comment s'appelle le canard grognon de Disney ?",good:"Donald",bad:["Titi","Daffy"]},
+        {emoji:"🤥",q:"Quel pantin voit son nez grandir quand il ment ?",good:"Pinocchio",bad:["Peter Pan","Aladdin"]},
+        {emoji:"🦁",q:"Comment s'appelle le petit lion du Roi Lion ?",good:"Simba",bad:["Nala","Zazu"]},
+        {emoji:"🐠",q:"Quel petit poisson orange cherche son papa ?",good:"Nemo",bad:["Dory","Bubulle"]},
+        {emoji:"🧞",q:"Qui sort de la lampe d'Aladdin ?",good:"Le génie",bad:["Un dragon","Un lapin"]},
+        {emoji:"❄️",q:"Comment s'appelle la reine des neiges ?",good:"Elsa",bad:["Anna","Ariel"]},
+        {emoji:"🐶",q:"Quel chien est l'ami de Mickey ?",good:"Pluto",bad:["Rex","Idéfix"]},
+        {emoji:"🎈",q:"De quelle couleur est Stitch ?",good:"Bleu",bad:["Rose","Vert"]},
+        {emoji:"🚗",q:"Comment s'appelle la voiture rouge de Cars ?",good:"Flash McQueen",bad:["Martin","Bagnole"]}
+      ],
+      grand: [
+        {emoji:"🦁",q:"Qui est le papa de Simba dans Le Roi Lion ?",good:"Mufasa",bad:["Scar","Timon"]},
+        {emoji:"🐠",q:"Quel poisson bleu perd la mémoire dans Nemo ?",good:"Dory",bad:["Marin","Nemo"]},
+        {emoji:"🤠",q:"Comment s'appelle le cow-boy de Toy Story ?",good:"Woody",bad:["Buzz","Rex"]},
+        {emoji:"🚀",q:"Comment s'appelle l'astronaute de Toy Story ?",good:"Buzz l'Éclair",bad:["Woody","Zurg"]},
+        {emoji:"🧜",q:"Comment s'appelle la petite sirène ?",good:"Ariel",bad:["Belle","Jasmine"]},
+        {emoji:"🏰",q:"Quel est le château emblème de Disney ?",good:"Le château de la Belle au bois dormant",bad:["La tour Eiffel","Le Colisée"]},
+        {emoji:"🐘",q:"Quel éléphant vole grâce à ses oreilles ?",good:"Dumbo",bad:["Bambi","Baloo"]},
+        {emoji:"🐻",q:"Quel ours chante « Il en faut peu pour être heureux » ?",good:"Baloo",bad:["Winnie","Paddington"]},
+        {emoji:"🍯",q:"Quel ourson adore le miel ?",good:"Winnie",bad:["Baloo","Petit Ours Brun"]},
+        {emoji:"⛄",q:"Comment s'appelle le bonhomme de neige de La Reine des Neiges ?",good:"Olaf",bad:["Sven","Kristoff"]},
+        {emoji:"🕰️",q:"Dans Cendrillon, à quelle heure la magie s'arrête ?",good:"Minuit",bad:["Midi","6 heures"]},
+        {emoji:"🐭",q:"Quel rat cuisine dans un film Disney-Pixar ?",good:"Rémy (Ratatouille)",bad:["Mickey","Jerry"]}
+      ]
+    },
+    animaux: {
+      petit: [
+        {emoji:"🦁",q:"Qui est le roi des animaux ?",good:"Le lion",bad:["Le mouton","La souris"]},
+        {emoji:"🐘",q:"Quel animal a une trompe ?",good:"L'éléphant",bad:["Le chat","Le lapin"]},
+        {emoji:"🦒",q:"Quel animal a un très long cou ?",good:"La girafe",bad:["Le cochon","Le canard"]},
+        {emoji:"🐧",q:"Quel animal vit dans le froid et nage ?",good:"Le pingouin",bad:["Le chameau","Le singe"]},
+        {emoji:"🐢",q:"Quel animal est très lent ?",good:"La tortue",bad:["Le guépard","Le lièvre"]},
+        {emoji:"🐝",q:"Qui fabrique le miel ?",good:"L'abeille",bad:["La mouche","Le papillon"]},
+        {emoji:"🐄",q:"Que dit la vache ?",good:"Meuh",bad:["Ouaf","Cui-cui"]},
+        {emoji:"🐸",q:"Où vit la grenouille ?",good:"Près de l'eau",bad:["Dans le feu","Dans le sable"]},
+        {emoji:"🦉",q:"Quel oiseau vit la nuit ?",good:"La chouette",bad:["La poule","Le canard"]},
+        {emoji:"🐒",q:"Quel animal adore les bananes ?",good:"Le singe",bad:["Le poisson","Le lion"]}
+      ],
+      grand: [
+        {emoji:"🦈",q:"Quel grand poisson a beaucoup de dents ?",good:"Le requin",bad:["La sardine","Le poisson rouge"]},
+        {emoji:"🕷️",q:"Combien de pattes a une araignée ?",good:"8",bad:["6","4"]},
+        {emoji:"🦘",q:"Quel animal saute et a une poche sur le ventre ?",good:"Le kangourou",bad:["Le lapin","La grenouille"]},
+        {emoji:"🐫",q:"Combien de bosses a un chameau ?",good:"2",bad:["1","3"]},
+        {emoji:"🐬",q:"Le dauphin est-il un poisson ?",good:"Non, un mammifère",bad:["Oui","Un oiseau"]},
+        {emoji:"🦇",q:"Quel animal dort la tête en bas ?",good:"La chauve-souris",bad:["Le hibou","Le chat"]},
+        {emoji:"🐆",q:"Quel est l'animal terrestre le plus rapide ?",good:"Le guépard",bad:["L'escargot","L'éléphant"]},
+        {emoji:"🐙",q:"Combien de bras a une pieuvre ?",good:"8",bad:["6","10"]},
+        {emoji:"🦋",q:"Que devient la chenille ?",good:"Un papillon",bad:["Une abeille","Un oiseau"]},
+        {emoji:"🐜",q:"Quel petit insecte vit en colonie et travaille beaucoup ?",good:"La fourmi",bad:["Le papillon","La coccinelle"]},
+        {emoji:"🦔",q:"Quel animal se roule en boule avec des piquants ?",good:"Le hérisson",bad:["Le lapin","La taupe"]},
+        {emoji:"🐊",q:"Quel animal a de grandes mâchoires et vit dans l'eau ?",good:"Le crocodile",bad:["Le mouton","Le cheval"]}
+      ]
+    },
+    espace: {
+      petit: [
+        {emoji:"☀️",q:"Quel astre nous éclaire le jour ?",good:"Le Soleil",bad:["La Lune","Une bougie"]},
+        {emoji:"🌙",q:"Que voit-on souvent dans le ciel la nuit ?",good:"La Lune",bad:["Le Soleil","Un arc-en-ciel"]},
+        {emoji:"⭐",q:"Comment s'appellent les petites lumières du ciel la nuit ?",good:"Les étoiles",bad:["Les nuages","Les gouttes"]},
+        {emoji:"🚀",q:"Avec quoi voyage-t-on dans l'espace ?",good:"Une fusée",bad:["Un vélo","Un bateau"]},
+        {emoji:"👨‍🚀",q:"Comment s'appelle celui qui va dans l'espace ?",good:"Un astronaute",bad:["Un pcompte","Un plombier"]},
+        {emoji:"🌍",q:"Comment s'appelle notre planète ?",good:"La Terre",bad:["La Lune","Le Soleil"]},
+        {emoji:"🌛",q:"La nuit, le ciel est plutôt…",good:"Foncé",bad:["Tout blanc","Vert"]},
+        {emoji:"🪐",q:"Quelle planète a de jolis anneaux ?",good:"Saturne",bad:["La Terre","La Lune"]},
+        {emoji:"⭐",q:"Combien d'étoiles ? ⭐⭐⭐",good:"3",bad:["2","4"]},
+        {emoji:"🌕",q:"La Lune, on la voit surtout…",good:"La nuit",bad:["À midi","Le matin"]}
+      ],
+      grand: [
+        {emoji:"🪐",q:"Quelle planète est connue pour ses anneaux ?",good:"Saturne",bad:["Mars","Vénus"]},
+        {emoji:"🔴",q:"Quelle planète est surnommée la planète rouge ?",good:"Mars",bad:["Jupiter","La Terre"]},
+        {emoji:"☀️",q:"Le Soleil est en fait une…",good:"Étoile",bad:["Planète",""+"Lune"]},
+        {emoji:"🌍",q:"Combien y a-t-il de planètes dans notre système solaire ?",good:"8",bad:["5","12"]},
+        {emoji:"🌙",q:"Comment s'appelle le satellite de la Terre ?",good:"La Lune",bad:["Mars","Le Soleil"]},
+        {emoji:"👨‍🚀",q:"Qui fut parmi les premiers hommes sur la Lune ?",good:"Neil Armstrong",bad:["Tintin","Superman"]},
+        {emoji:"🚀",q:"Comment s'appelle l'engin qui décolle vers l'espace ?",good:"Une fusée",bad:["Un sous-marin","Un tracteur"]},
+        {emoji:"🌌",q:"Comment s'appelle notre galaxie ?",good:"La Voie lactée",bad:["Andromède","La Grande Ourse"]},
+        {emoji:"☄️",q:"Une boule de glace et de poussière avec une queue, c'est une…",good:"Comète",bad:["Étoile filante","Planète"]},
+        {emoji:"🛰️",q:"Un objet qui tourne autour de la Terre s'appelle un…",good:"Satellite",bad:["Nuage","Avion"]},
+        {emoji:"🪐",q:"Quelle est la plus grosse planète ?",good:"Jupiter",bad:["La Terre","Mars"]},
+        {emoji:"🌡️",q:"La planète la plus proche du Soleil est…",good:"Mercure",bad:["Neptune","La Terre"]}
+      ]
+    },
+    voitures: {
+      petit: [
+        {emoji:"🚗",q:"Combien de roues a une voiture ?",good:"4",bad:["2","6"]},
+        {emoji:"🚦",q:"Au feu rouge, la voiture doit…",good:"S'arrêter",bad:["Accélérer","Klaxonner"]},
+        {emoji:"🟢",q:"Au feu vert, la voiture peut…",good:"Avancer",bad:["S'arrêter","Reculer toujours"]},
+        {emoji:"⛽",q:"Que boit une voiture pour rouler ?",good:"De l'essence",bad:["Du lait","De l'eau"]},
+        {emoji:"📣",q:"Comment s'appelle le bruit « tut-tut » de la voiture ?",good:"Le klaxon",bad:["La sonnette","La cloche"]},
+        {emoji:"🚒",q:"De quelle couleur est le camion des pompiers ?",good:"Rouge",bad:["Bleu","Jaune"]},
+        {emoji:"🚕",q:"Quelle voiture emmène les gens contre de l'argent ?",good:"Le taxi",bad:["Le tracteur","La brouette"]},
+        {emoji:"🏎️",q:"Quelle voiture roule très très vite en course ?",good:"La voiture de course",bad:["Le camion-poubelle","Le tracteur"]},
+        {emoji:"🚗",q:"Combien de voitures ? 🚗🚗",good:"2",bad:["3","1"]},
+        {emoji:"🚌",q:"Quel grand véhicule transporte beaucoup de gens ?",good:"Le bus",bad:["La moto","Le vélo"]}
+      ],
+      grand: [
+        {emoji:"🏎️",q:"Comment s'appelle une course de voitures très célèbre ?",good:"La Formule 1",bad:["Le marathon","Le Tour de France"]},
+        {emoji:"⚡",q:"Une voiture qui roule à l'électricité est une voiture…",good:"Électrique",bad:["À vapeur","À pédales"]},
+        {emoji:"🛞",q:"Comment s'appelle la roue de secours ?",good:"La roue de secours",bad:["Le volant","Le rétroviseur"]},
+        {emoji:"🎡",q:"Avec quoi tourne-t-on pour diriger la voiture ?",good:"Le volant",bad:["Le klaxon","Le siège"]},
+        {emoji:"🚓",q:"Quelle voiture a un gyrophare et une sirène ?",good:"La voiture de police",bad:["Le camion de glace","Le tracteur"]},
+        {emoji:"⛽",q:"Où va-t-on remplir le réservoir d'essence ?",good:"À la station-service",bad:["À la boulangerie","À la piscine"]},
+        {emoji:"🅿️",q:"Où gare-t-on une voiture ?",good:"Sur une place de parking",bad:["Dans la piscine","Sur le toit"]},
+        {emoji:"🚗",q:"Comment s'appelle la personne qui conduit ?",good:"Le conducteur",bad:["Le passager","Le piéton"]},
+        {emoji:"🔧",q:"Qui répare les voitures ?",good:"Le mécanicien",bad:["Le boulanger","Le dentiste"]},
+        {emoji:"🚦",q:"Combien de couleurs a un feu tricolore ?",good:"3",bad:["2","4"]},
+        {emoji:"🛑",q:"Que veut dire un panneau STOP ?",good:"S'arrêter",bad:["Accélérer","Tourner"]},
+        {emoji:"🏁",q:"Que voit-on à la fin d'une course ?",good:"Le drapeau à damier",bad:["Un feu rouge","Un arc-en-ciel"]}
+      ]
+    },
+    mer: {
+      petit: [
+        {emoji:"🐟",q:"Où vit le poisson ?",good:"Dans l'eau",bad:["Dans l'arbre","Dans le sable sec"]},
+        {emoji:"🦀",q:"Quel animal marche de côté avec des pinces ?",good:"Le crabe",bad:["Le poisson","La méduse"]},
+        {emoji:"🐬",q:"Quel animal marin est joueur et gentil ?",good:"Le dauphin",bad:["Le requin","Le lion"]},
+        {emoji:"🌊",q:"L'eau de la mer a quel goût ?",good:"Salé",bad:["Sucré","Piquant"]},
+        {emoji:"🐚",q:"Que ramasse-t-on sur la plage ?",good:"Des coquillages",bad:["Des cailloux d'or","Des bonbons"]},
+        {emoji:"🏖️",q:"Avec quoi joue-t-on sur la plage ?",good:"Le sable",bad:["La neige","La boue"]},
+        {emoji:"🐙",q:"Quel animal a plein de bras dans la mer ?",good:"La pieuvre",bad:["Le crabe","Le poisson"]},
+        {emoji:"🐢",q:"Quelle est cet animal à carapace qui nage ?",good:"La tortue de mer",bad:["Le chat","Le lapin"]},
+        {emoji:"⛵",q:"Qu'est-ce qui flotte sur la mer et a une voile ?",good:"Un bateau",bad:["Une voiture","Un avion"]},
+        {emoji:"🐠",q:"Combien de poissons ? 🐠🐠🐠",good:"3",bad:["2","4"]}
+      ],
+      grand: [
+        {emoji:"🐋",q:"Quel est le plus grand animal de la mer ?",good:"La baleine bleue",bad:["Le requin","Le dauphin"]},
+        {emoji:"🦈",q:"Combien de rangées de dents peut avoir un requin ?",good:"Plusieurs",bad:["Une seule","Aucune"]},
+        {emoji:"🐙",q:"Combien de bras a une pieuvre ?",good:"8",bad:["6","4"]},
+        {emoji:"🌊",q:"Comment appelle-t-on le mouvement de la mer sur la plage ?",good:"Les vagues",bad:["La pluie","Le vent"]},
+        {emoji:"🧜",q:"Quelle créature imaginaire est mi-femme mi-poisson ?",good:"La sirène",bad:["La fée","La sorcière"]},
+        {emoji:"🪸",q:"Comment s'appellent ces structures colorées où vivent les poissons ?",good:"Le corail",bad:["Les nuages","Les cailloux"]},
+        {emoji:"🐡",q:"Quel poisson se gonfle comme un ballon ?",good:"Le poisson-globe",bad:["Le thon","La sardine"]},
+        {emoji:"🦭",q:"Quel animal marin aime se reposer sur les rochers ?",good:"Le phoque",bad:["Le tigre","Le singe"]},
+        {emoji:"🚢",q:"Comment s'appelle celui qui dirige un bateau ?",good:"Le capitaine",bad:["Le jardinier","Le boulanger"]},
+        {emoji:"🧭",q:"Quel objet indique le nord aux marins ?",good:"La boussole",bad:["La montre","La règle"]},
+        {emoji:"🐚",q:"Que fabrique une huître de précieux ?",good:"Une perle",bad:["Un diamant","Un caillou"]},
+        {emoji:"🌊",q:"Une très grosse vague dangereuse s'appelle un…",good:"Tsunami",bad:["Nuage","Orage"]}
+      ]
+    },
+    nature: {
+      petit: [
+        {emoji:"🌳",q:"Qu'est-ce qui a un tronc, des branches et des feuilles ?",good:"L'arbre",bad:["La voiture","La maison"]},
+        {emoji:"🌸",q:"Qu'est-ce qui pousse dans le jardin et sent bon ?",good:"La fleur",bad:["Le caillou","Le téléphone"]},
+        {emoji:"🌧️",q:"Qu'est-ce qui tombe du ciel quand il pleut ?",good:"L'eau",bad:["Du sable","Du lait"]},
+        {emoji:"☀️",q:"Qu'est-ce qui nous réchauffe le jour ?",good:"Le soleil",bad:["La glace","La lune"]},
+        {emoji:"🍎",q:"Sur quoi poussent les pommes ?",good:"Un arbre",bad:["Sous terre","Dans l'eau"]},
+        {emoji:"🐛",q:"Que devient la chenille ?",good:"Un papillon",bad:["Un poisson","Une pierre"]},
+        {emoji:"🍂",q:"En automne, les feuilles des arbres…",good:"Tombent",bad:["Poussent vite","Deviennent bleues"]},
+        {emoji:"⛄",q:"En hiver, il peut tomber de la…",good:"Neige",bad:["Confiture","Farine"]},
+        {emoji:"🐝",q:"Qui butine les fleurs ?",good:"L'abeille",bad:["Le poisson","Le chat"]},
+        {emoji:"🌈",q:"Que voit-on parfois après la pluie ?",good:"Un arc-en-ciel",bad:["De la neige","Un volcan"]}
+      ],
+      grand: [
+        {emoji:"🌳",q:"Que produisent les arbres et qui nous aide à respirer ?",good:"De l'oxygène",bad:["De la fumée","Du sucre"]},
+        {emoji:"🌱",q:"De quoi une graine a-t-elle besoin pour pousser ?",good:"D'eau et de soleil",bad:["De chocolat","De télévision"]},
+        {emoji:"🍄",q:"Le champignon est-il une plante ?",good:"Non",bad:["Oui","Un animal"]},
+        {emoji:"🐝",q:"Comment s'appelle la poudre que les abeilles transportent ?",good:"Le pollen",bad:["Le sucre","Le sel"]},
+        {emoji:"🌋",q:"Qu'est-ce qui crache de la lave ?",good:"Un volcan",bad:["Une montagne","Un lac"]},
+        {emoji:"💧",q:"Comment s'appelle le cycle de l'eau qui monte en nuage puis retombe ?",good:"Le cycle de l'eau",bad:["Le cycle du feu","Le cycle du vent"]},
+        {emoji:"🌲",q:"Un arbre qui garde ses feuilles l'hiver est un…",good:"Conifère",bad:["Pommier","Cerisier"]},
+        {emoji:"🍁",q:"Combien y a-t-il de saisons ?",good:"4",bad:["2","6"]},
+        {emoji:"🐦",q:"Où beaucoup d'oiseaux pondent-ils leurs œufs ?",good:"Dans un nid",bad:["Dans l'eau","Sous une pierre"]},
+        {emoji:"🌍",q:"Comment protège-t-on la nature ?",good:"En ne jetant pas de déchets",bad:["En polluant","En coupant tout"]},
+        {emoji:"🦋",q:"Quel insecte a de grandes ailes colorées ?",good:"Le papillon",bad:["La fourmi","Le ver de terre"]},
+        {emoji:"🌊",q:"L'eau des rivières va vers…",good:"La mer",bad:["Le ciel directement","La montagne"]}
+      ]
+    },
+    drapeaux: {
+      petit: [
+        {emoji:"🇫🇷",q:"Quelles sont les couleurs du drapeau français ?",good:"Bleu blanc rouge",bad:["Vert jaune rouge","Noir et blanc"]},
+        {emoji:"🇧🇪",q:"Le drapeau belge a du noir, du jaune et du…",good:"Rouge",bad:["Bleu","Vert"]},
+        {emoji:"🚩",q:"Un drapeau, ça sert à représenter un…",good:"Pays",bad:["Gâteau","Animal"]},
+        {emoji:"🇳🇱",q:"Le drapeau des Pays-Bas a du rouge, du blanc et du…",good:"Bleu",bad:["Vert","Jaune"]},
+        {emoji:"🇮🇹",q:"Le drapeau italien est vert, blanc et…",good:"Rouge",bad:["Bleu","Noir"]},
+        {emoji:"🏁",q:"Quel drapeau voit-on à la fin d'une course de voitures ?",good:"À damier",bad:["Rose","Tout bleu"]},
+        {emoji:"🇩🇪",q:"Le drapeau allemand est noir, rouge et…",good:"Jaune",bad:["Vert","Bleu"]},
+        {emoji:"🇯🇵",q:"Le drapeau du Japon a un rond rouge sur fond…",good:"Blanc",bad:["Noir","Vert"]},
+        {emoji:"🇪🇸",q:"Le drapeau espagnol a du rouge et du…",good:"Jaune",bad:["Bleu","Violet"]},
+        {emoji:"🚩",q:"Combien de couleurs sur le drapeau français ?",good:"3",bad:["2","5"]}
+      ],
+      grand: [
+        {emoji:"🇧🇪",q:"Quel pays a un drapeau noir-jaune-rouge vertical ?",good:"La Belgique",bad:["L'Allemagne","La France"]},
+        {emoji:"🇨🇦",q:"Quel pays a une feuille d'érable sur son drapeau ?",good:"Le Canada",bad:["Les USA","Le Brésil"]},
+        {emoji:"🇯🇵",q:"Quel pays a un rond rouge (le soleil) sur son drapeau ?",good:"Le Japon",bad:["La Chine","La Corée"]},
+        {emoji:"🇺🇸",q:"Quel drapeau a des étoiles et des bandes ?",good:"Les États-Unis",bad:["Le Mexique","L'Italie"]},
+        {emoji:"🇧🇷",q:"Quel pays a un drapeau vert avec un losange jaune ?",good:"Le Brésil",bad:["L'Argentine","Le Portugal"]},
+        {emoji:"🇨🇭",q:"Quel pays a une croix blanche sur fond rouge ?",good:"La Suisse",bad:["Le Danemark","La Norvège"]},
+        {emoji:"🇬🇧",q:"Quel pays a le drapeau appelé « Union Jack » ?",good:"Le Royaume-Uni",bad:["L'Irlande","La France"]},
+        {emoji:"🇮🇹",q:"Le drapeau vert-blanc-rouge horizontal est celui de… (attention !)",good:"L'Italie",bad:["L'Espagne","La Grèce"]},
+        {emoji:"🇩🇪",q:"Quel pays a un drapeau noir-rouge-or horizontal ?",good:"L'Allemagne",bad:["La Belgique","L'Autriche"]},
+        {emoji:"🇸🇪",q:"Quel pays a une croix jaune sur fond bleu ?",good:"La Suède",bad:["La Finlande","La Grèce"]},
+        {emoji:"🇵🇹",q:"Quel pays voisin de l'Espagne a un drapeau vert et rouge ?",good:"Le Portugal",bad:["L'Italie","La France"]},
+        {emoji:"🇬🇷",q:"Quel pays a un drapeau bleu et blanc à rayures ?",good:"La Grèce",bad:["La Suède","Les Pays-Bas"]}
+      ]
+    },
+    capitales: {
+      petit: [
+        {emoji:"🇫🇷",q:"Quelle est la capitale de la France ?",good:"Paris",bad:["Lyon","Nice"]},
+        {emoji:"🇧🇪",q:"Quelle est la capitale de la Belgique ?",good:"Bruxelles",bad:["Anvers","Liège"]},
+        {emoji:"🗼",q:"Dans quelle ville se trouve la tour Eiffel ?",good:"Paris",bad:["Londres","Rome"]},
+        {emoji:"🇮🇹",q:"Quelle est la capitale de l'Italie ?",good:"Rome",bad:["Milan","Venise"]},
+        {emoji:"🇬🇧",q:"Quelle est la capitale de l'Angleterre ?",good:"Londres",bad:["Paris","Dublin"]},
+        {emoji:"🇪🇸",q:"Quelle est la capitale de l'Espagne ?",good:"Madrid",bad:["Barcelone","Séville"]},
+        {emoji:"🏙️",q:"Une capitale, c'est la ville la plus importante d'un…",good:"Pays",bad:["Jardin","Magasin"]},
+        {emoji:"🇳🇱",q:"Quelle est la capitale des Pays-Bas ?",good:"Amsterdam",bad:["Rotterdam","Bruxelles"]},
+        {emoji:"🇩🇪",q:"Quelle est la capitale de l'Allemagne ?",good:"Berlin",bad:["Munich","Hambourg"]},
+        {emoji:"🇵🇹",q:"Quelle est la capitale du Portugal ?",good:"Lisbonne",bad:["Porto","Madrid"]}
+      ],
+      grand: [
+        {emoji:"🇺🇸",q:"Quelle est la capitale des États-Unis ?",good:"Washington",bad:["New York","Los Angeles"]},
+        {emoji:"🇯🇵",q:"Quelle est la capitale du Japon ?",good:"Tokyo",bad:["Kyoto","Osaka"]},
+        {emoji:"🇨🇦",q:"Quelle est la capitale du Canada ?",good:"Ottawa",bad:["Toronto","Montréal"]},
+        {emoji:"🇷🇺",q:"Quelle est la capitale de la Russie ?",good:"Moscou",bad:["Kiev","Varsovie"]},
+        {emoji:"🇨🇳",q:"Quelle est la capitale de la Chine ?",good:"Pékin",bad:["Shanghai","Hong Kong"]},
+        {emoji:"🇧🇷",q:"Quelle est la capitale du Brésil ?",good:"Brasilia",bad:["Rio","São Paulo"]},
+        {emoji:"🇬🇷",q:"Quelle est la capitale de la Grèce ?",good:"Athènes",bad:["Rome","Le Caire"]},
+        {emoji:"🇪🇬",q:"Quelle est la capitale de l'Égypte ?",good:"Le Caire",bad:["Alexandrie","Tunis"]},
+        {emoji:"🇨🇭",q:"Quelle est la capitale de la Suisse ?",good:"Berne",bad:["Genève","Zurich"]},
+        {emoji:"🇦🇺",q:"Quelle est la capitale de l'Australie ?",good:"Canberra",bad:["Sydney","Melbourne"]},
+        {emoji:"🇲🇦",q:"Quelle est la capitale du Maroc ?",good:"Rabat",bad:["Casablanca","Marrakech"]},
+        {emoji:"🇸🇪",q:"Quelle est la capitale de la Suède ?",good:"Stockholm",bad:["Oslo","Helsinki"]}
+      ]
+    },
+    pays: {
+      petit: [
+        {emoji:"🗼",q:"Dans quel pays se trouve la tour Eiffel ?",good:"La France",bad:["L'Italie","L'Espagne"]},
+        {emoji:"🍝",q:"De quel pays vient la pizza et les spaghettis ?",good:"L'Italie",bad:["Le Japon","La Belgique"]},
+        {emoji:"🍫",q:"Quel pays est célèbre pour son chocolat et ses frites ?",good:"La Belgique",bad:["Le Brésil","La Chine"]},
+        {emoji:"🐨",q:"Dans quel pays vivent les kangourous ?",good:"L'Australie",bad:["La France","Le Canada"]},
+        {emoji:"🗽",q:"Dans quel pays se trouve la statue de la Liberté ?",good:"Les États-Unis",bad:["L'Angleterre","L'Italie"]},
+        {emoji:"🍣",q:"De quel pays viennent les sushis ?",good:"Le Japon",bad:["Le Mexique","La Suède"]},
+        {emoji:"🐼",q:"Dans quel pays vivent les pandas ?",good:"La Chine",bad:["Le Canada","L'Égypte"]},
+        {emoji:"🏰",q:"Dans quel pays y a-t-il beaucoup de châteaux et la Belgique est voisine ?",good:"La France",bad:["L'Australie","Le Japon"]},
+        {emoji:"⚽",q:"Quel pays est fou de foot et fait la samba ?",good:"Le Brésil",bad:["La Norvège","Le Canada"]},
+        {emoji:"🌷",q:"Quel pays est connu pour ses tulipes et ses moulins ?",good:"Les Pays-Bas",bad:["L'Italie","La Grèce"]}
+      ],
+      grand: [
+        {emoji:"🐫",q:"Dans quel pays se trouvent les pyramides ?",good:"L'Égypte",bad:["La Grèce","L'Inde"]},
+        {emoji:"🗿",q:"Sur quel continent se trouve le Kenya (safaris) ?",good:"L'Afrique",bad:["L'Asie","L'Europe"]},
+        {emoji:"🍁",q:"Quel grand pays d'Amérique a une feuille d'érable ?",good:"Le Canada",bad:["Le Brésil","Le Mexique"]},
+        {emoji:"🕌",q:"Le Taj Mahal se trouve dans quel pays ?",good:"L'Inde",bad:["La Chine","Le Japon"]},
+        {emoji:"🏛️",q:"Dans quel pays est né les Jeux olympiques ?",good:"La Grèce",bad:["L'Italie","L'Espagne"]},
+        {emoji:"🐨",q:"Quel pays est aussi un continent ?",good:"L'Australie",bad:["Le Canada","La Russie"]},
+        {emoji:"🌋",q:"Quel pays a beaucoup de volcans et des sushis ?",good:"Le Japon",bad:["La France","Le Portugal"]},
+        {emoji:"💃",q:"De quel pays vient le flamenco ?",good:"L'Espagne",bad:["L'Allemagne","La Suède"]},
+        {emoji:"🎡",q:"Dans quel pays se trouve Big Ben ?",good:"Le Royaume-Uni",bad:["L'Irlande","Les Pays-Bas"]},
+        {emoji:"🐧",q:"Sur quel continent tout blanc vivent les manchots ?",good:"L'Antarctique",bad:["L'Afrique","L'Europe"]},
+        {emoji:"🌍",q:"Combien y a-t-il de continents ?",good:"7",bad:["5","10"]},
+        {emoji:"🇧🇪",q:"Dans quel pays vis-tu, si tu es à Bruxelles ?",good:"La Belgique",bad:["La France","Les Pays-Bas"]}
+      ]
+    },
+    astronomie: {
+      petit: [
+        {emoji:"☀️",q:"Le Soleil est-il une étoile ou une planète ?",good:"Une étoile",bad:["Une planète","Une lune"]},
+        {emoji:"🌙",q:"Que voit-on grossir et rétrécir dans le ciel la nuit ?",good:"La Lune",bad:["Le Soleil","Un nuage"]},
+        {emoji:"⭐",q:"Comment s'appellent les points brillants du ciel la nuit ?",good:"Les étoiles",bad:["Les gouttes","Les cailloux"]},
+        {emoji:"🌍",q:"Sur quelle planète habitons-nous ?",good:"La Terre",bad:["Mars","La Lune"]},
+        {emoji:"🪐",q:"Quelle planète a de beaux anneaux ?",good:"Saturne",bad:["La Terre","Le Soleil"]},
+        {emoji:"🌟",q:"Que fait-on quand on voit une étoile filante ?",good:"Un vœu",bad:["La sieste","Un dessin"]},
+        {emoji:"🌛",q:"La Lune brille surtout…",good:"La nuit",bad:["À midi","Le matin"]},
+        {emoji:"🔭",q:"Avec quel instrument regarde-t-on les étoiles de près ?",good:"Un télescope",bad:["Une loupe de jardin","Un miroir"]},
+        {emoji:"🚀",q:"Avec quoi va-t-on dans l'espace ?",good:"Une fusée",bad:["Un bateau","Un train"]},
+        {emoji:"⭐",q:"Combien d'étoiles ? ⭐⭐⭐⭐",good:"4",bad:["3","5"]}
+      ],
+      grand: [
+        {emoji:"🌍",q:"Combien de planètes tournent autour du Soleil ?",good:"8",bad:["5","10"]},
+        {emoji:"☀️",q:"Quelle est la planète la plus proche du Soleil ?",good:"Mercure",bad:["La Terre","Neptune"]},
+        {emoji:"🪐",q:"Quelle est la plus grosse planète du système solaire ?",good:"Jupiter",bad:["La Terre","Mars"]},
+        {emoji:"🔴",q:"Quelle planète est surnommée la planète rouge ?",good:"Mars",bad:["Vénus","Saturne"]},
+        {emoji:"🌌",q:"Comment s'appelle notre galaxie ?",good:"La Voie lactée",bad:["Andromède","Orion"]},
+        {emoji:"🌑",q:"Quand la Lune cache le Soleil, c'est une…",good:"Éclipse",bad:["Comète","Étoile filante"]},
+        {emoji:"☄️",q:"Un astre glacé avec une longue queue s'appelle une…",good:"Comète",bad:["Planète","Galaxie"]},
+        {emoji:"🌠",q:"Un petit caillou qui brûle en entrant dans l'atmosphère est une…",good:"Étoile filante",bad:["Planète","Lune"]},
+        {emoji:"🛰️",q:"Un objet qui tourne autour d'une planète s'appelle un…",good:"Satellite",bad:["Nuage","Avion"]},
+        {emoji:"👨‍🚀",q:"Comment appelle-t-on un voyageur de l'espace ?",good:"Un astronaute",bad:["Un plongeur","Un pilote de course"]},
+        {emoji:"⭐",q:"Le Soleil est en réalité une…",good:"Étoile",bad:["Planète","Comète"]},
+        {emoji:"🌡️",q:"Quelle planète est la plus chaude ?",good:"Vénus",bad:["Mars","Neptune"]}
+      ]
+    }
+  };
+
+  // Associe un thème saisi (texte libre) à une banque de thème, sinon null
+  function mapThemeKey(theme) {
+    const t = (theme||"").toLowerCase();
+    if (t.includes("foot")) return "foot";
+    if (t.includes("héro") || t.includes("hero")) return "superheros";
+    if (t.includes("princesse")) return "princesses";
+    if (t.includes("dino")) return "dinosaures";
+    if (t.includes("disney")) return "disney";
+    if (t.includes("animau") || t.includes("animal")) return "animaux";
+    if (t.includes("espace")) return "espace";
+    if (t.includes("astronomie") || t.includes("astro")) return "astronomie";
+    if (t.includes("voiture")) return "voitures";
+    if (t.includes("mer") || t.includes("océan") || t.includes("ocean")) return "mer";
+    if (t.includes("nature")) return "nature";
+    if (t.includes("drapeau")) return "drapeaux";
+    if (t.includes("capitale")) return "capitales";
+    if (t.includes("pays")) return "pays";
+    return null;
+  }
+
+  function fallbackGame(player) {
+    // Priorité au thème s'il correspond à une banque connue
+    const themeKey = mapThemeKey(gameThemes[player.key]);
+    let pool;
+    if (themeKey && THEME_POOL[themeKey]) {
+      const byAgeT = THEME_POOL[themeKey];
+      pool = player.age <= 5 ? byAgeT.petit : byAgeT.grand;
+    } else {
+      const cat = gameCategories[player.key] || "melange";
+      const byAge = OFFLINE_POOL[cat] || OFFLINE_POOL.melange;
+      pool = player.age <= 5 ? byAge.petit : byAge.grand;
+    }
+    if (!recentQuestions[player.key]) recentQuestions[player.key] = [];
+    const recent = recentQuestions[player.key];
+    // on évite les questions récentes tant qu'il en reste assez
+    let avail = pool.filter(qq => !recent.includes(qq.q));
+    if (avail.length < questionsPerGame) { recent.length = 0; avail = pool.slice(); }
+    const picked = shuffle(avail).slice(0,questionsPerGame);
+    picked.forEach(qq => {
+      recent.push(qq.q);
+    });
+    while (recent.length > 12) recent.shift(); // mémoire des 12 dernières
+
+    // Construit les questions avec réponses mélangées
+    return picked.map(qq => {
+      const nbBad = Math.min(qq.bad.length, player.age <= 5 ? 1 : 2);
+      const options = shuffle([qq.good, ...shuffle(qq.bad).slice(0,nbBad)]);
+      return {
+        emoji: qq.emoji,
+        question: qq.q,
+        answers: options,
+        correct: options.indexOf(qq.good)
+      };
+    });
+  }
+
+  // ================= FIN MODULE JEU =================
+
+  // ---------- Sons (Web Audio) ----------
+  let audioCtx = null, soundOn = true;
+  function ensureAudio(){
+    if (!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  }
+  function playChime(kind){
+    if (!soundOn) return;
+    ensureAudio();
+    const now = audioCtx.currentTime;
+    let notes;
+    if (kind === 'bedtime') notes = [784,659,523,392];
+    else if (kind === 'win') notes = [523,659,784,1047,1319];
+    else if (kind === 'tap') notes = [659];
+    else notes = [523,659,784];
+    notes.forEach((f,i) => {
+      const osc = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      osc.type = 'sine'; osc.frequency.value = f;
+      const t = now + i*0.16;
+      g.gain.setValueAtTime(0,t);
+      g.gain.linearRampToValueAtTime(0.2,t+0.04);
+      g.gain.exponentialRampToValueAtTime(0.001,t+0.8);
+      osc.connect(g).connect(audioCtx.destination);
+      osc.start(t); osc.stop(t+0.85);
+    });
+  }
+
+  const soundBtn = document.getElementById('soundBtn');
+  soundBtn.addEventListener('click', () => {
+    soundOn = !soundOn;
+    soundBtn.textContent = soundOn ? '🔔' : '🔕';
+    if (soundOn){ ensureAudio(); playChime('step'); }
+  });
+
+  // ---------- Confettis ----------
+  const colors = ['#ff9e7d','#ffd166','#7fd1ae','#6fb3e0','#8b7fc4'];
+  function makeConfetti(n){
+    for (let i=0;i<n;i++){
+      const c = document.createElement('div');
+      c.className = 'confetti';
+      c.style.left = Math.random()*100+'%';
+      c.style.background = colors[Math.floor(Math.random()*colors.length)];
+      document.body.appendChild(c);
+      const dur = 1200 + Math.random()*1200;
+      c.animate([
+        {transform:`translateY(0) rotate(0deg)`, opacity:1},
+        {transform:`translateY(100vh) rotate(${Math.random()*720}deg)`, opacity:0.9}
+      ], {duration:dur, easing:'ease-in'});
+      setTimeout(()=>c.remove(), dur);
+    }
+  }
+  function burstConfetti(){ makeConfetti(14); }
+  function bigConfetti(){ makeConfetti(60); }
+
+  // Animation des avatars à chaque étape validée (type aléatoire)
+  const AV_ANIMS = ['av-bounce','av-spin','av-pop','av-wobble','av-float'];
+  function avatarCelebration() {
+    const withAvatar = KIDS.filter(k => k.avatar);
+    if (withAvatar.length === 0) return; // rien à animer sans photo
+    const anim = AV_ANIMS[Math.floor(Math.random()*AV_ANIMS.length)];
+    const layer = document.createElement('div');
+    layer.className = 'celebrate-layer';
+    withAvatar.forEach((k, i) => {
+      const av = document.createElement('div');
+      av.className = 'celebrate-av';
+      av.style.backgroundImage = `url(${k.avatar})`;
+      av.style.animation = `${anim} 1.6s ease ${i*0.12}s both`;
+      layer.appendChild(av);
+    });
+    document.body.appendChild(layer);
+    setTimeout(() => layer.remove(), 2200);
+  }
+
+  // ================= MODULE RÉGLAGES =================
+  const EMOJI_CHOICES = ["🧸","🚽","🧼","🪥","🛁","👕","🍽️","📚","🧦","🚂","🎨","🧩","🌙","⭐","😴","🎲","📖","💧","🪆","🧴"];
+
+  const GAME_THEME_SUGGESTIONS = ["le foot","les super-héros","les princesses","les dinosaures","Disney","les animaux","l'espace","les voitures","la mer","la nature","les drapeaux","les capitales","les pays","l'astronomie"];
+  const STORY_THEME_SUGGESTIONS = ["les dinosaures","la mer","l'espace","les super-héros","Disney","la forêt","les animaux","la magie","les pirates","le cirque"];
+
+  function buildThemeChips(containerId, inputId, suggestions, getVal) {
+    buildThemeChipsInto(document.getElementById(containerId), document.getElementById(inputId), suggestions, getVal);
+  }
+  function buildThemeChipsInto(box, input, suggestions, getVal) {
+    box.innerHTML = "";
+    suggestions.forEach(theme => {
+      const chip = document.createElement('button');
+      chip.className = 'theme-chip' + (getVal() === theme ? ' active' : '');
+      chip.textContent = theme;
+      chip.addEventListener('click', () => {
+        if (input.value.trim() === theme) { input.value = ""; }
+        else { input.value = theme; }
+        input.dispatchEvent(new Event('input'));
+        [...box.children].forEach(c => c.classList.toggle('active', c.textContent === input.value.trim()));
+      });
+      box.appendChild(chip);
+    });
+    input.addEventListener('input', () => {
+      [...box.children].forEach(c => c.classList.toggle('active', c.textContent === input.value.trim()));
+    });
+  }
+
+  const BACKGROUNDS = [
+    { key:"jour", label:"☀️ Jour", cls:"" },
+    { key:"sunset", label:"🌅 Coucher de soleil", cls:"bg-sunset" },
+    { key:"ocean", label:"🌊 Océan", cls:"bg-ocean" },
+    { key:"forest", label:"🌲 Forêt", cls:"bg-forest" },
+    { key:"candy", label:"🍬 Bonbon", cls:"bg-candy" },
+    { key:"peach", label:"🍑 Pêche", cls:"bg-peach" }
+  ];
+
+  function applyNightMode() {
+    // retire tous les fonds
+    BACKGROUNDS.forEach(b => { if (b.cls) document.body.classList.remove(b.cls); });
+    document.body.classList.toggle('night', nightMode);
+    // applique le fond choisi seulement si pas en mode nuit
+    if (!nightMode) {
+      const bg = BACKGROUNDS.find(b => b.key === bgTheme);
+      if (bg && bg.cls) document.body.classList.add(bg.cls);
+    }
+  }
+
+  function buildBgChips() {
+    const box = document.getElementById('bgChips');
+    box.innerHTML = "";
+    BACKGROUNDS.forEach(bg => {
+      const chip = document.createElement('button');
+      chip.className = 'theme-chip' + (bgTheme === bg.key ? ' active' : '');
+      chip.textContent = bg.label;
+      chip.addEventListener('click', () => {
+        bgTheme = bg.key;
+        [...box.children].forEach((c,idx) => c.classList.toggle('active', BACKGROUNDS[idx].key === bgTheme));
+        applyNightMode(); // aperçu immédiat
+      });
+      box.appendChild(chip);
+    });
+  }
+
+  const STORY_LENGTHS = [
+    { label:"Grande histoire (~1250 mots)", value:1250 },
+    { label:"Épopée (~1500 mots)", value:1500 }
+  ];
+
+  function buildLengthChips() {
+    const box = document.getElementById('storyLenChips');
+    box.innerHTML = "";
+    STORY_LENGTHS.forEach(opt => {
+      const chip = document.createElement('button');
+      chip.className = 'theme-chip' + (storyLength === opt.value ? ' active' : '');
+      chip.textContent = opt.label;
+      chip.addEventListener('click', () => {
+        storyLength = opt.value;
+        [...box.children].forEach((c,idx) => c.classList.toggle('active', STORY_LENGTHS[idx].value === storyLength));
+      });
+      box.appendChild(chip);
+    });
+  }
+
+  function buildQCountChips() {
+    const box = document.getElementById('qCountChips');
+    box.innerHTML = "";
+    [2,3,4,5].forEach(n => {
+      const chip = document.createElement('button');
+      chip.className = 'theme-chip' + (questionsPerGame === n ? ' active' : '');
+      chip.textContent = n + " questions";
+      chip.addEventListener('click', () => {
+        questionsPerGame = n;
+        [...box.children].forEach((c,idx) => c.classList.toggle('active', [2,3,4,5][idx] === questionsPerGame));
+      });
+      box.appendChild(chip);
+    });
+  }
+
+  const CATEGORIES = [
+    { key:"melange", label:"🎲 Mélangé" },
+    { key:"calcul", label:"➕ Calcul" },
+    { key:"culture", label:"🌍 Culture générale" },
+    { key:"observation", label:"👀 Observation" },
+    { key:"lettres", label:"🔤 Lettres et mots" }
+  ];
+
+  function buildCatChips(containerId, kidKey) {
+    buildCatChipsInto(document.getElementById(containerId), kidKey);
+  }
+  function buildCatChipsInto(box, kidKey) {
+    box.innerHTML = "";
+    CATEGORIES.forEach(cat => {
+      const chip = document.createElement('button');
+      chip.className = 'theme-chip' + (gameCategories[kidKey] === cat.key ? ' active' : '');
+      chip.textContent = cat.label;
+      chip.addEventListener('click', () => {
+        gameCategories[kidKey] = cat.key;
+        [...box.children].forEach((c,idx) => c.classList.toggle('active', CATEGORIES[idx].key === cat.key));
+      });
+      box.appendChild(chip);
+    });
+  }
+
+  function buildKidGameSections() {
+    // Catégories par enfant
+    const catBox = document.getElementById('catByKid');
+    catBox.innerHTML = "";
+    KIDS.forEach(k => {
+      const wrap = document.createElement('div');
+      wrap.style.marginBottom = '8px';
+      const lbl = document.createElement('div');
+      lbl.className = 'set-hint';
+      lbl.style.fontWeight = '600'; lbl.style.color = 'var(--card-ink)';
+      lbl.textContent = k.name;
+      const chips = document.createElement('div');
+      chips.className = 'theme-chips';
+      wrap.appendChild(lbl); wrap.appendChild(chips);
+      catBox.appendChild(wrap);
+      buildCatChipsInto(chips, k.key);
+    });
+    // Thèmes par enfant
+    const themeBox = document.getElementById('themeByKid');
+    themeBox.innerHTML = "";
+    KIDS.forEach(k => {
+      const wrap = document.createElement('div');
+      wrap.style.marginBottom = '12px';
+      const lbl = document.createElement('div');
+      lbl.className = 'set-hint';
+      lbl.style.fontWeight = '600'; lbl.style.color = 'var(--card-ink)';
+      lbl.textContent = k.name;
+      const input = document.createElement('input');
+      input.type = 'text'; input.className = 'set-input';
+      input.placeholder = 'ex : le foot, les animaux… (vide = varié)';
+      input.value = gameThemes[k.key] || "";
+      input.addEventListener('input', () => { gameThemes[k.key] = input.value; });
+      const chips = document.createElement('div');
+      chips.className = 'theme-chips';
+      wrap.appendChild(lbl); wrap.appendChild(input); wrap.appendChild(chips);
+      themeBox.appendChild(wrap);
+      buildThemeChipsInto(chips, input, GAME_THEME_SUGGESTIONS, () => gameThemes[k.key]);
+    });
+  }
+
+  function openSettings() {
+    ensureKidMaps();
+    buildKids();
+    buildSteps();
+    document.getElementById('setNight').checked = nightMode;
+    buildLengthChips();
+    buildQCountChips();
+    buildKidGameSections();
+    buildBgChips();
+    show('settings');
+  }
+  function closeSettings() {
+    applyConfig();
+    rebuildProgress();
+    saveKids();
+    show('home');
+  }
+
+  // aperçu immédiat du mode nuit au clic
+  document.getElementById('setNight').addEventListener('change', (e) => {
+    nightMode = e.target.checked;
+    applyNightMode();
+  });
+
+  document.getElementById('settingsBtn').addEventListener('click', openSettings);
+  document.getElementById('settingsClose').addEventListener('click', closeSettings);
+
+  // --- Enfants ---
+  // Réduit une image en petit avatar carré (dataURL), pour rester léger
+  function makeAvatar(file, cb) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const size = 160;
+        const canvas = document.createElement('canvas');
+        canvas.width = size; canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        // recadrage centré carré
+        const min = Math.min(img.width, img.height);
+        const sx = (img.width - min) / 2, sy = (img.height - min) / 2;
+        ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size);
+        cb(canvas.toDataURL('image/jpeg', 0.8));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function buildKids() {
+    const box = document.getElementById('setKids');
+    box.innerHTML = "";
+    KIDS.forEach((k, idx) => {
+      const row = document.createElement('div');
+      row.className = 'set-row';
+
+      // Pastille photo
+      const photoBtn = document.createElement('button');
+      photoBtn.style.width = '52px'; photoBtn.style.height = '52px';
+      photoBtn.style.borderRadius = '50%'; photoBtn.style.flexShrink = '0';
+      photoBtn.style.border = '3px solid ' + k.color;
+      photoBtn.style.cursor = 'pointer'; photoBtn.style.overflow = 'hidden';
+      photoBtn.style.padding = '0'; photoBtn.style.background = '#eee7f7';
+      photoBtn.title = "Choisir une photo";
+      if (k.avatar) {
+        photoBtn.style.backgroundImage = `url(${k.avatar})`;
+        photoBtn.style.backgroundSize = 'cover';
+        photoBtn.style.backgroundPosition = 'center';
+      } else {
+        photoBtn.textContent = '📷';
+        photoBtn.style.fontSize = '22px';
+      }
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file'; fileInput.accept = 'image/*'; fileInput.style.display = 'none';
+      fileInput.addEventListener('change', () => {
+        if (fileInput.files && fileInput.files[0]) {
+          makeAvatar(fileInput.files[0], dataUrl => { k.avatar = dataUrl; buildKids(); });
+        }
+      });
+      photoBtn.addEventListener('click', () => fileInput.click());
+
+      const name = document.createElement('input');
+      name.className = 'set-input';
+      name.value = k.name;
+      name.addEventListener('input', () => { k.name = name.value; });
+
+      const ageWrap = document.createElement('div');
+      ageWrap.style.display = 'flex';
+      ageWrap.style.alignItems = 'center';
+      ageWrap.style.gap = '6px';
+      const ageLbl = document.createElement('span');
+      ageLbl.textContent = 'âge';
+      ageLbl.style.fontSize = '14px';
+      ageLbl.style.color = '#8a86a6';
+      const age = document.createElement('select');
+      age.className = 'set-input';
+      age.style.flex = 'none';
+      age.style.minWidth = '64px';
+      for (let a = 2; a <= 10; a++) {
+        const opt = document.createElement('option');
+        opt.value = a; opt.textContent = a + ' ans';
+        if (a === k.age) opt.selected = true;
+        age.appendChild(opt);
+      }
+      age.addEventListener('change', () => { k.age = parseInt(age.value, 10); });
+      ageWrap.appendChild(ageLbl);
+      ageWrap.appendChild(age);
+
+      const color = document.createElement('input');
+      color.type = 'color';
+      color.className = 'set-color';
+      color.value = k.color;
+      color.addEventListener('input', () => { k.color = color.value; buildKids(); });
+
+      const del = document.createElement('button');
+      del.className = 'set-del'; del.textContent = '✕';
+      del.disabled = KIDS.length <= 1;
+      del.title = KIDS.length <= 1 ? "Il faut au moins un enfant" : "Retirer cet enfant";
+      del.addEventListener('click', () => {
+        KIDS = KIDS.filter(x => x.key !== k.key);
+        buildKids();
+        buildKidGameSections();
+      });
+
+      row.appendChild(photoBtn);
+      row.appendChild(fileInput);
+      row.appendChild(name);
+      row.appendChild(ageWrap);
+      row.appendChild(color);
+      row.appendChild(del);
+      box.appendChild(row);
+    });
+
+    // Bouton ajouter un enfant (max 5)
+    if (KIDS.length < 5) {
+      const addBtn = document.createElement('button');
+      addBtn.className = 'set-add';
+      addBtn.textContent = '+ Ajouter un enfant';
+      addBtn.style.marginTop = '4px';
+      addBtn.addEventListener('click', () => {
+        const key = 'k' + (kidSeq++);
+        const color = KID_COLORS[KIDS.length % KID_COLORS.length];
+        KIDS.push({ key, name: 'Enfant ' + (KIDS.length+1), age: 5, color });
+        scores[key] = 0;
+        gameThemes[key] = "";
+        gameCategories[key] = "melange";
+        buildKids();
+        buildKidGameSections();
+      });
+      box.appendChild(addBtn);
+    }
+  }
+
+  // --- Étapes ---
+  function buildSteps() {
+    const box = document.getElementById('setSteps');
+    box.innerHTML = "";
+    steps.forEach((s, idx) => {
+      const row = document.createElement('div');
+      row.className = 'set-row';
+      const special = s.game || s.story;
+      if (s.hidden) row.style.opacity = '0.5';
+
+      const emoji = document.createElement('input');
+      emoji.className = 'set-input set-emoji';
+      emoji.value = s.pic;
+      emoji.addEventListener('input', () => { s.pic = emoji.value; });
+
+      const title = document.createElement('input');
+      title.className = 'set-input';
+      title.value = s.title;
+      title.addEventListener('input', () => { s.title = title.value; });
+
+      const up = document.createElement('button');
+      up.className = 'set-move'; up.textContent = '↑';
+      up.addEventListener('click', () => { if (idx>0){ [steps[idx-1],steps[idx]]=[steps[idx],steps[idx-1]]; buildSteps(); } });
+
+      row.appendChild(emoji);
+      row.appendChild(title);
+      row.appendChild(up);
+
+      if (special) {
+        // Étapes jeu/histoire : masquables mais pas supprimables
+        const eye = document.createElement('button');
+        eye.className = 'set-move';
+        eye.style.background = s.hidden ? '#9a97b8' : 'var(--mint)';
+        eye.textContent = s.hidden ? '🙈' : '👁';
+        eye.title = s.hidden ? "Masquée — appuyer pour afficher" : "Affichée — appuyer pour masquer";
+        eye.addEventListener('click', () => { s.hidden = !s.hidden; buildSteps(); });
+        row.appendChild(eye);
+      } else {
+        const del = document.createElement('button');
+        del.className = 'set-del'; del.textContent = '✕';
+        del.disabled = steps.length <= 1;
+        del.title = steps.length <= 1 ? "Il faut au moins une étape" : "Supprimer";
+        del.addEventListener('click', () => { steps.splice(idx,1); buildSteps(); });
+        row.appendChild(del);
+      }
+
+      box.appendChild(row);
+    });
+  }
+
+  document.getElementById('addStepBtn').addEventListener('click', () => {
+    // insérer avant l'étape dodo si elle existe, sinon à la fin
+    const newStep = { pic:"⭐", multi:false, title:"Nouvelle étape", text:"" };
+    const lastIdx = steps.length - 1;
+    if (steps[lastIdx] && !steps[lastIdx].game && !steps[lastIdx].story) {
+      steps.splice(lastIdx, 0, newStep);
+    } else {
+      steps.push(newStep);
+    }
+    buildSteps();
+  });
+
+  // --- Bibliothèque d'étapes prêtes à l'emploi ---
+  const STEP_LIBRARY = [
+    { groupe:"Hygiène et préparation", items:[
+      { pic:"🚿", title:"Prendre sa douche", text:"On se lave bien partout" },
+      { pic:"🛁", title:"Prendre son bain", text:"Un bon bain tout chaud" },
+      { pic:"👕", title:"Mettre le pyjama", text:"Le pyjama tout doux pour la nuit" },
+      { pic:"🧦", title:"Ranger les vêtements sales", text:"Au panier à linge !" },
+      { pic:"💧", title:"Se laver le visage", text:"Un visage tout propre" },
+      { pic:"🧴", title:"Mettre la crème", text:"Une peau bien douce" },
+      { pic:"💇", title:"Se coiffer", text:"On démêle les cheveux" },
+      { pic:"👟", title:"Préparer les affaires de demain", text:"Vêtements et chaussures prêts" }
+    ]},
+    { groupe:"Ranger et aider", items:[
+      { pic:"🧸", title:"Ranger les jouets", text:"Chaque chose retrouve sa maison" },
+      { pic:"🍽️", title:"Débarrasser son assiette", text:"On aide à la cuisine" },
+      { pic:"📚", title:"Ranger les livres", text:"Le coin lecture bien rangé" },
+      { pic:"🎒", title:"Préparer le cartable", text:"Tout est prêt pour l'école" },
+      { pic:"🛏️", title:"Préparer le lit", text:"On tapote l'oreiller" }
+    ]},
+    { groupe:"Calme et transition", items:[
+      { pic:"🥛", title:"Boire un peu d'eau", text:"Une petite gorgée avant le lit" },
+      { pic:"🧘", title:"Trois grandes respirations", text:"On souffle tout doucement" },
+      { pic:"🕯️", title:"Tamiser la lumière", text:"On baisse les lumières" },
+      { pic:"🧸", title:"Retrouver son doudou", text:"Doudou est prêt pour la nuit" },
+      { pic:"🌙", title:"Allumer la veilleuse", text:"Une petite lumière douce" },
+      { pic:"🪟", title:"Fermer les rideaux", text:"On ferme pour faire tout noir" }
+    ]},
+    { groupe:"Lien et émotions", items:[
+      { pic:"🤗", title:"Un gros câlin", text:"Un câlin tout doux" },
+      { pic:"💬", title:"Le meilleur moment du jour", text:"On raconte une chose chouette d'aujourd'hui" },
+      { pic:"🙏", title:"Dire merci", text:"Merci pour une belle chose de la journée" },
+      { pic:"😘", title:"Faire un bisou à tout le monde", text:"Bonne nuit à chacun" },
+      { pic:"🌈", title:"Penser à demain", text:"Une chose qu'on a hâte de faire demain" },
+      { pic:"❤️", title:"Dire je t'aime", text:"Un petit mot doux" }
+    ]}
+  ];
+
+  let libraryOpen = false;
+  document.getElementById('libraryBtn').addEventListener('click', () => {
+    libraryOpen = !libraryOpen;
+    const box = document.getElementById('stepLibrary');
+    box.style.display = libraryOpen ? 'block' : 'none';
+    if (libraryOpen) buildLibrary();
+  });
+
+  function addStepFromLibrary(item) {
+    const newStep = { pic:item.pic, multi:false, title:item.title, text:item.text };
+    const lastIdx = steps.length - 1;
+    if (steps[lastIdx] && !steps[lastIdx].game && !steps[lastIdx].story) {
+      steps.splice(lastIdx, 0, newStep);
+    } else {
+      steps.push(newStep);
+    }
+    buildSteps();
+  }
+
+  function buildLibrary() {
+    const box = document.getElementById('stepLibrary');
+    box.innerHTML = "";
+    STEP_LIBRARY.forEach(grp => {
+      const h = document.createElement('div');
+      h.textContent = grp.groupe;
+      h.style.fontFamily = "'Baloo 2', sans-serif";
+      h.style.fontWeight = '700';
+      h.style.color = 'var(--night)';
+      h.style.margin = '10px 0 6px';
+      box.appendChild(h);
+      const chips = document.createElement('div');
+      chips.className = 'theme-chips';
+      grp.items.forEach(item => {
+        const chip = document.createElement('button');
+        chip.className = 'theme-chip';
+        chip.textContent = item.pic + ' ' + item.title;
+        chip.title = "Ajouter cette étape";
+        chip.addEventListener('click', () => {
+          addStepFromLibrary(item);
+          chip.style.background = 'var(--mint)';
+          chip.style.color = '#fff';
+          chip.textContent = '✓ ' + item.pic + ' ' + item.title;
+          setTimeout(() => {
+            chip.style.background = '';
+            chip.style.color = '';
+            chip.textContent = item.pic + ' ' + item.title;
+          }, 1000);
+        });
+        chips.appendChild(chip);
+      });
+      box.appendChild(chips);
+    });
+  }
+
+  // --- Jeux ---
+  function buildGames() {
+    const box = document.getElementById('setGames');
+    if (!box) return;
+    box.innerHTML = "";
+    GAME_TYPES.forEach(type => {
+      const label = document.createElement('label');
+      label.className = 'set-game';
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.checked = enabledGameTypes.includes(type);
+      cb.addEventListener('change', () => {
+        if (cb.checked) { if (!enabledGameTypes.includes(type)) enabledGameTypes.push(type); }
+        else { enabledGameTypes = enabledGameTypes.filter(t => t !== type); }
+      });
+      const span = document.createElement('span');
+      span.textContent = type;
+      label.appendChild(cb);
+      label.appendChild(span);
+      box.appendChild(label);
+    });
+  }
+
+  // ================= FIN MODULE RÉGLAGES =================
+
+  // ---------- Sauvegarde sur la tablette (persistante) ----------
+  // Stocke les enfants (prénom, âge, couleur, photo) pour les retrouver chaque soir.
+  async function saveKids() {
+    try {
+      if (!window.storage) return;
+      await window.storage.set('rituel:kids', JSON.stringify(KIDS));
+      await window.storage.set('rituel:kidSeq', JSON.stringify(kidSeq));
+    } catch(e) { /* sans stockage, on ignore */ }
+  }
+  async function loadKids() {
+    try {
+      if (!window.storage) return false;
+      const res = await window.storage.get('rituel:kids');
+      if (res && res.value) {
+        const arr = JSON.parse(res.value);
+        if (Array.isArray(arr) && arr.length) {
+          KIDS = arr;
+          const seq = await window.storage.get('rituel:kidSeq');
+          if (seq && seq.value) kidSeq = JSON.parse(seq.value);
+          ensureScores(); ensureKidMaps();
+          return true;
+        }
+      }
+    } catch(e) { /* pas de stockage dispo */ }
+    return false;
+  }
+
+  // Rendu initial : on charge les enfants sauvegardés puis on applique la config
+  (async () => {
+    await loadKids();
+    applyConfig();
+  })();
+</script>
+</body>
+</html>

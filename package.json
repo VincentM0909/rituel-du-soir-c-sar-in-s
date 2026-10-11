@@ -1,0 +1,7 @@
+{
+  "name": "rituel-du-soir",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Rituel du soir interactif pour enfants, relié à l'IA (Groq)",
+  "type": "module"
+}
