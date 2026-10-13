@@ -1022,7 +1022,13 @@
       "un conte merveilleux (de la magie douce, un vœu qui se réalise)",
       "une histoire du quotidien transformée en aventure (une cabane, un pique-nique, un jardin)",
       "une histoire de voyage (un moyen de transport insolite et doux)",
-      "une histoire de nature et d'animaux (les saisons, la forêt, la mer)"
+      "une histoire de nature et d'animaux (les saisons, la forêt, la mer)",
+      "une histoire de collection ou de fabrication (construire, cuisiner, bricoler quelque chose)",
+      "une histoire de métamorphose (un personnage change, grandit, apprend quelque chose)",
+      "une histoire de course ou de défi tout doux (un petit jeu, un concours gentil)",
+      "une histoire de secret partagé (une cachette, un trésor, un passage caché)",
+      "une histoire musicale (des instruments, des chansons, des sons rigolos)",
+      "une histoire gourmande (un festin, des saveurs, une recette magique)"
     ];
     const debuts = [
       "en pleine action, au milieu d'une scène",
@@ -1030,7 +1036,11 @@
       "par une description d'un son ou d'une odeur",
       "par un dialogue entre deux personnages",
       "par une petite chanson ou comptine inventée",
-      "par la présentation rigolote d'un personnage"
+      "par la présentation rigolote d'un personnage",
+      "par une liste drôle de choses",
+      "par un bruit ou une onomatopée (Toc toc ! Splash ! Hop !)",
+      "par la fin de l'histoire racontée à l'envers",
+      "par une exclamation d'un personnage surpris"
     ];
     const tons = [
       "espiègle et joyeux", "tendre et poétique", "doux et rêveur",
@@ -1050,6 +1060,12 @@ CE SOIR, fais une histoire VRAIMENT DIFFÉRENTE des précédentes (graine unique
 - Ton général : ${ton}.
 - Invente une intrigue et une structure originales : varie les péripéties, les lieux, les rebondissements doux. Ne reprends pas un schéma tout fait.
 
+INTERDICTIONS STRICTES (très important — ne JAMAIS utiliser ces formules toutes faites et clichés) :
+- "les étoiles scintillaient/brillaient", "bercé par le vent/les vagues", "une douce lumière", "le vent chantait une berceuse", "la lune veillait/souriait", "les paupières devinrent lourdes", "emporté vers de beaux rêves", "tout doux, tout calme", "un parfum de miel et de fleurs", "comme une couverture", "sur la pointe des pieds", "mille petites lumières".
+- N'emploie AUCUNE phrase que tu aurais tendance à écrire par habitude dans une histoire du soir. Trouve des images NEUVES et inattendues, un vocabulaire original.
+- La fin doit mener au sommeil, mais invente une façon ORIGINALE de le faire à chaque fois (pas toujours les étoiles et la lune) : ça peut être un objet, un son, un personnage, un lieu qui amène le calme différemment.
+- Varie radicalement la structure : l'ordre des événements, le nombre de lieux, qui parle, comment ça se termine.
+
 Contraintes à respecter :
 - Environ ${storyLength} mots (vise vraiment cette longueur).
 - Découpe en ${storyLength <= 1250 ? 14 : 17} paragraphes d'à peu près la même taille.
@@ -1067,7 +1083,7 @@ Réponds UNIQUEMENT en JSON valide, sans texte autour ni backticks, au format :
         body: JSON.stringify({
           model:"claude-sonnet-4-6",
           max_tokens: storyLength > 800 ? 4000 : storyLength > 400 ? 2000 : 1200,
-          temperature: 1,
+          temperature: 1.1,
           messages:[{ role:"user", content:prompt }]
         })
       });
