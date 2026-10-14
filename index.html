@@ -619,7 +619,7 @@
   ensureKidMaps();
   let nightMode = false;
   let bgTheme = "jour"; // fond d'écran choisi
-  let storyLength = 1500; // mots visés pour l'histoire
+  let storyLength = 1200; // mots visés pour l'histoire
   let questionsPerGame = 3; // nombre de questions par mini-jeu
 
   // ---------- Données des étapes ----------
@@ -1068,7 +1068,7 @@ INTERDICTIONS STRICTES (très important — ne JAMAIS utiliser ces formules tout
 
 Contraintes à respecter :
 - Environ ${storyLength} mots (vise vraiment cette longueur).
-- Découpe en ${storyLength <= 1250 ? 14 : 17} paragraphes d'à peu près la même taille.
+- Découpe en ${storyLength <= 900 ? 8 : 11} paragraphes d'à peu près la même taille.
 - Adapté au coucher : rien d'effrayant, pas de méchant menaçant, pas de suspense angoissant. Ça peut être vivant et drôle au milieu, mais ça se termine toujours dans le calme et le sommeil.
 - Cite ${nbEnfants === 1 ? "l'enfant par son prénom" : "chaque enfant par son prénom (" + listePrenoms + ")"} comme héros de l'aventure.
 - Phrases simples et imagées, compréhensibles par un jeune enfant.
@@ -1082,15 +1082,42 @@ Réponds UNIQUEMENT en JSON valide, sans texte autour ni backticks, au format :
         headers:{ "Content-Type":"application/json" },
         body: JSON.stringify({
           model:"claude-sonnet-4-6",
-          max_tokens: storyLength > 800 ? 4000 : storyLength > 400 ? 2000 : 1200,
-          temperature: 1.1,
+          max_tokens: 2048,
+          temperature: 1,
           messages:[{ role:"user", content:prompt }]
         })
       });
       const data = await res.json();
-      const text = data.content.filter(b=>b.type==="text").map(b=>b.text).join("");
-      const clean = text.replace(/```json/g,"").replace(/```/g,"").trim();
-      const parsed = JSON.parse(clean);
+      let text = data.content.filter(b=>b.type==="text").map(b=>b.text).join("");
+      // nettoyage + extraction robuste du bloc JSON
+      let clean = text.replace(/```json/g,"").replace(/```/g,"").trim();
+      const a = clean.indexOf("{");
+      if (a !== -1) clean = clean.slice(a);
+      const b = clean.lastIndexOf("}");
+      if (b !== -1) clean = clean.slice(0, b+1);
+
+      let parsed = null;
+      try { parsed = JSON.parse(clean); }
+      catch(e1) {
+        // Réparation : histoire parfois coupée. On récupère les paragraphes complets.
+        const titleM = clean.match(/"title"\s*:\s*"([^"]*)"/);
+        const paras = [];
+        const re = /"((?:[^"\\]|\\.)*)"/g;
+        let m, started = false;
+        const afterParas = clean.indexOf('"paragraphs"');
+        if (afterParas !== -1) {
+          const sub = clean.slice(afterParas);
+          let mm; const r2 = /"((?:[^"\\]|\\.)*)"/g;
+          r2.exec(sub); // saute le mot-clé "paragraphs"
+          while ((mm = r2.exec(sub)) !== null) {
+            const s = mm[1].replace(/\\"/g,'"').replace(/\\n/g,' ').trim();
+            if (s.length > 15) paras.push(s);
+          }
+        }
+        if (paras.length >= 3) {
+          parsed = { title: titleM ? titleM[1] : "L'histoire du soir", paragraphs: paras };
+        }
+      }
       if (parsed && (parsed.paragraphs || parsed.text)) return parsed;
       throw new Error("format");
     } catch(e) {
@@ -2550,8 +2577,8 @@ Réponds UNIQUEMENT avec du JSON valide, sans texte autour, sans backticks, au f
   }
 
   const STORY_LENGTHS = [
-    { label:"Grande histoire (~1250 mots)", value:1250 },
-    { label:"Épopée (~1500 mots)", value:1500 }
+    { label:"Histoire (~900 mots)", value:900 },
+    { label:"Grande histoire (~1200 mots)", value:1200 }
   ];
 
   function buildLengthChips() {
