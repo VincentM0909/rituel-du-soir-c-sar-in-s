@@ -33,6 +33,7 @@ export const handler = async (event) => {
       body: JSON.stringify({
         model: model,
         max_tokens: body.max_tokens || 1200,
+        temperature: (typeof body.temperature === "number") ? body.temperature : 0.7,
         messages: messages
       })
     });
